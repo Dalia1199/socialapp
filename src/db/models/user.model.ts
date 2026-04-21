@@ -1,6 +1,6 @@
 import mongoose, { Types } from "mongoose";
 import { GenderEnum, RoleEnum } from "../../common/enum/userenum";
-import { string, trim } from "zod";
+import { string,  } from "zod";
 
 
 export interface Iuser {

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { IsignupType,IconfirmemailType } from "./auth.dto";
+import { IsignupType,IconfirmemailType, IsigninType } from "./auth.dto";
 import { HydratedDocument, Model, Types } from "mongoose";
 import  usermodel, { Iuser } from "../../db/models/user.model";
 import { AppError } from "../../common/utilis/global-error-handler";
@@ -12,10 +12,14 @@ import { eventemitter } from "../../common/utilis/email/email.events";
 import { providerenum } from "../../common/enum/userenum";
 import { successresponse } from "../../common/utilis/response.success";
 import redisService from "../../common/service/redis.service";
+import { randomUUID } from "crypto";
+import tokenService from "../../common/service/token service";
+import { refreshsecretkey, secret_key } from "../../conflig/conflig.service";
 
 class userservice {
     private readonly _usermodel = new userRepository()
     private readonly _redisservice = redisService
+    private readonly _tokenservice = tokenService
     constructor() {
     }
 
@@ -65,9 +69,40 @@ class userservice {
 
     }
 
-    signin = async (req: Request, res: Response, next: NextFunction) => {
-        res.status(200).json({ message: "user signed in successfuly" })
+  signin = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, password } : IsigninType = req.body
+    const user = await this._usermodel.findOne({
+       filter: { email ,
+        provider: providerenum.system ,
+        confirmed: {$exists:true}
+       }
+      })
+      if (!user) {
+        throw new AppError("invalid email or password", 400);}
+        if (!compare({ plain_text: password, cipher_text: user.password })) {
+          throw new AppError("invalid  password", 400);
+        }
+          const uuid=randomUUID()
+          const access_token= this._tokenservice.generatetoken({
+            payload: { id: user._id, email: user.email },
+            secret_key: secret_key!,
+            options: { expiresIn: "1h",jwtid:uuid }
+          })
+          const refresh_token=this._tokenservice.generatetoken({
+            payload: { id: user._id, email: user.email },
+            secret_key: refreshsecretkey!,
+            options: { expiresIn: "7d",jwtid:uuid }
+          })
+successresponse({ res, message: "user signed in successfuly", data: { access_token,refresh_token}})
+
+    }
+     getprofile = async (req: Request, res: Response, next: NextFunction) => {
+    
+        successresponse({ res, message: "user signed in successfuly", data: {user: req.user } })
+
     }
 }
+
+
 export default new userservice()
 // انا مش محتاجه ابعت parameter فبعت instance لكن لو عايزه ابعت parameter هبعت class نفسه

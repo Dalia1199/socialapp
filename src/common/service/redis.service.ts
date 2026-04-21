@@ -21,6 +21,9 @@ export class redisService {
         this.client.connect()
     console.log("connected to redis successfuly" )
     };
+    revokedkey = ({ userid, jti }: { userid: Types.ObjectId, jti: string }) => {
+        return `revoketoken::${userid}::${jti}`
+    }
     
  get_key = ({ userid }: { userid: Types.ObjectId }) => {
     return `revoketoken ::${userid}`

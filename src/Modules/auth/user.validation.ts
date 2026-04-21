@@ -23,6 +23,12 @@ export const signupschema = {
       }
     })
 }
+export const signinschema :any ={
+  body: z.strictObject({
+    email: z.email("invalid email"),
+    password: z.string().min(6, "invalid password")
+  })
+}
 export const confirmemailschema :any={
   body: z.strictObject({
     email: z.email("invalid email"),

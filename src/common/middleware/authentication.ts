@@ -1,62 +1,63 @@
-// import { Request, Response, NextFunction } from "express";
-// import { secret_key } from "../../../conflig/conflig.service";
-// import userModel from "../../db/models/user.model
-// import { get, revokedKey } from "../../DB/redis/redis.service";
-// import { verifyToken } from "../utils/token.service";
+import { Request, Response, NextFunction } from "express";
+import { AppError } from "../utilis/global-error-handler";
+import {Prefix,  secret_key} from "../../conflig/conflig.service"
+import tokenService from "../service/token service";
+import { userRepository } from "../../db/repositry/user repository ";
+ import redisService from "../service/redis.service";
+const usermodel = new userRepository()
 
-// export const authentication = async (
-//     req: Request,
-//     res: Response,
-//     next: NextFunction
-// ) => {
-//     try {
-//         const authorization = req.headers.authorization;
 
-//         if (!authorization) {
-//             throw new Error("Token not found");
-//         }
+export const authentication = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+  
+        const {authorization} = req.headers
 
-//         const [prefix, token] = authorization.split(" ");
+        if (!authorization) {
+            throw new  AppError("Token not found");
+        }
 
-//         if (prefix !== "Bearer" || !token) {
-//             throw new Error("Invalid token format");
-//         }
+        const [prefix, token]:  string[] = authorization.split(" ");
 
-//         const decoded = verifyToken({
-//             token,
-//             secret_key,
-//         });
+    if (prefix !==Prefix) {
+            throw new  AppError("Invalid token prefix");
+        } if (!token) {
+            throw new  AppError("token not found");
+        }
 
-//         if (!decoded || !decoded.id) {
-//             throw new Error("Invalid token");
-//         }
+    const decoded = tokenService.verifytoken({
+            token,
+            secret_key:secret_key!,
+        });
 
-//         const user = await userModel.findById(decoded.id);
+        if (!decoded?.id) {
+            throw new AppError("Invalid token payload");
+        }
 
-//         if (!user) {
-//             throw new Error("User not found");
-//         }
+        const user = await usermodel.findOne({ filter:{ id: decoded.id } })
 
-//         if (
-//             user.changeCredential?.getTime &&
-//             user.changeCredential.getTime() > decoded.iat * 1000
-//         ) {
-//             throw new Error("Token expired due to password change");
-//         }
+        if (!user) {
+            throw new AppError("User not found",400);
+        }
+if (!user.confirmed){
+    throw new AppError("Please confirm your email to access this resource",400)
+}
+        // if (
+        //     user.changeCredential?.getTime &&
+        //     user.changeCredential.getTime() > decoded.iat * 1000
+        // ) {
+        //     throw new AppError("Token expired due to password change");
+        // }
 
-//         const isRevoked = await get(
-//             revokedKey({ userId: decoded.id, jti: decoded.jti })
-//         );
+        const revokedtoken  = await  redisService.get(redisService.revokedkey({ userid: decoded.id, jti: decoded.jti! }));
+       
 
-//         if (isRevoked) {
-//             throw new Error("Token has been revoked");
-//         }
-
-//         (req as any).user = user;
-//         (req as any).decoded = decoded;
-
-//         next();
-//     } catch (err) {
-//         next(err);
-//     }
-// };
+        if (revokedtoken) {
+            throw new AppError("Token has been revoked");
+        }
+       req.user = user
+        req.decoded= decoded
+     next()
+    }

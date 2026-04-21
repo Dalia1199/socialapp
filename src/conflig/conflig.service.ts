@@ -9,3 +9,6 @@ export const saltrounds:string=process.env.saltrounds!;
 export const password=process.env.password!
 export const Email = process.env.Email
 export const redisurl = process.env.redisurl
+export const refreshsecretkey = process.env.refreshsecretkey
+export const secret_key = process.env.secret_key
+export const Prefix = process.env.prefix
