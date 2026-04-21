@@ -11,7 +11,7 @@ const conflig_service_1 = require("./conflig/conflig.service");
 const global_error_handler_1 = require("./common/utilis/global-error-handler");
 const user_controller_1 = __importDefault(require("./Modules/auth/user.controller"));
 const connectiondb_1 = require("./db/connectiondb");
-const redis_connect_1 = require("./db/redis/redis.connect");
+const redis_service_1 = __importDefault(require("./common/service/redis.service"));
 const app = (0, express_1.default)();
 const port = Number(conflig_service_1.Port);
 const bootstrap = () => {
@@ -33,7 +33,7 @@ const bootstrap = () => {
     });
     app.use("/auth", user_controller_1.default);
     (0, connectiondb_1.checkconnection)();
-    (0, redis_connect_1.connectionRedis)();
+    redis_service_1.default.connect();
     app.use("{/*demo}", (req, res, next) => {
         // throw new Error(`url ${req.originalUrl}with method ${req.method} not found`,{cause:404})
         throw new global_error_handler_1.AppError();

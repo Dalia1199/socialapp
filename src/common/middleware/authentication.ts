@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../utilis/global-error-handler";
-import {Prefix,  secret_key} from "../../conflig/conflig.service"
+import {Prefix_admin,Prefix_user,  secret_key_admin,  secret_key_user} from "../../conflig/conflig.service"
 import tokenService from "../service/token service";
 import { userRepository } from "../../db/repositry/user repository ";
  import redisService from "../service/redis.service";
@@ -21,18 +21,21 @@ export const authentication = async (
 
         const [prefix, token]:  string[] = authorization.split(" ");
 
-    if (prefix !==Prefix) {
-            throw new  AppError("Invalid token prefix");
-        } if (!token) {
+       if (!token) {
             throw new  AppError("token not found");
         }
-
+let accesssecretkey="";
+if(prefix==Prefix_user){
+    accesssecretkey=secret_key_user!
+}else if(prefix==Prefix_admin){
+    accesssecretkey=secret_key_admin!}
+    else{ throw new AppError("invalid token prefix")}
     const decoded = tokenService.verifytoken({
             token,
-            secret_key:secret_key!,
+            secret_key:accesssecretkey, 
         });
 
-        if (!decoded?.id) {
+        if ( !decoded||!decoded?.id) {
             throw new AppError("Invalid token payload");
         }
 

@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmemailschema = exports.signupschema = void 0;
+exports.confirmemailschema = exports.signinschema = exports.signupschema = void 0;
 const z = __importStar(require("zod"));
 const userenum_1 = require("../../common/enum/userenum");
 exports.signupschema = {
@@ -56,6 +56,12 @@ exports.signupschema = {
                 message: "password donotmatch"
             });
         }
+    })
+};
+exports.signinschema = {
+    body: z.strictObject({
+        email: z.email("invalid email"),
+        password: z.string().min(6, "invalid password")
     })
 };
 exports.confirmemailschema = {

@@ -9,12 +9,12 @@ import { generateotp, sendemail } from "../../common/utilis/email/send email";
 import { emailtemplete } from "../../common/utilis/email/emai.templete";
 import { EventEnum } from "../../common/enum/event.enum";
 import { eventemitter } from "../../common/utilis/email/email.events";
-import { providerenum } from "../../common/enum/userenum";
+import { providerenum, RoleEnum } from "../../common/enum/userenum";
 import { successresponse } from "../../common/utilis/response.success";
 import redisService from "../../common/service/redis.service";
 import { randomUUID } from "crypto";
 import tokenService from "../../common/service/token service";
-import { refreshsecretkey, secret_key } from "../../conflig/conflig.service";
+import { refreshsecret_admin, refreshsecretkey_user, secret_key_admin, secret_key_user} from "../../conflig/conflig.service";
 
 class userservice {
     private readonly _usermodel = new userRepository()
@@ -85,12 +85,12 @@ class userservice {
           const uuid=randomUUID()
           const access_token= this._tokenservice.generatetoken({
             payload: { id: user._id, email: user.email },
-            secret_key: secret_key!,
+              secret_key: user?.role == RoleEnum.user ? secret_key_user! : secret_key_admin!,
             options: { expiresIn: "1h",jwtid:uuid }
           })
           const refresh_token=this._tokenservice.generatetoken({
             payload: { id: user._id, email: user.email },
-            secret_key: refreshsecretkey!,
+              secret_key: user?.role == RoleEnum.user ? refreshsecretkey_user! : refreshsecret_admin!,
             options: { expiresIn: "7d",jwtid:uuid }
           })
 successresponse({ res, message: "user signed in successfuly", data: { access_token,refresh_token}})
@@ -101,6 +101,136 @@ successresponse({ res, message: "user signed in successfuly", data: { access_tok
         successresponse({ res, message: "user signed in successfuly", data: {user: req.user } })
 
     }
+  signupwithgmail = async (req: Request, res: Response, next: NextFunction) => {
+    const { email, age, gender }: IsignupType = req.body
+
+    if (await this._usermodel.findOne({ filter: { email } })) {
+      throw new AppError("email already exists", 409)
+    }
+
+    const user: HydratedDocument<Iuser> = await this._usermodel.create({
+      email,
+      age,
+      gender,
+      provider: providerenum.google,
+      confirmed: true
+    } as Partial<Iuser>)
+
+    successresponse({ res, message: "signup with gmail successfuly", data: { user } })
+  }
+  loginwithgmail = async (req: Request, res: Response, next: NextFunction) => {
+    const { email }: IsigninType = req.body
+
+    const user = await this._usermodel.findOne({
+      filter: {
+        email,
+        provider: providerenum.google
+      }
+    })
+
+    if (!user) {
+      throw new AppError("user not found", 404)
+    }
+
+    const uuid = randomUUID()
+
+    const access_token = this._tokenservice.generatetoken({
+      payload: { id: user._id, email: user.email },
+      secret_key: user?.role == RoleEnum.user ? secret_key_user! : secret_key_admin!,
+      options: { expiresIn: "1h", jwtid: uuid }
+    })
+
+    const refresh_token = this._tokenservice.generatetoken({
+      payload: { id: user._id, email: user.email },
+      secret_key: user?.role == RoleEnum.user ? refreshsecretkey_user! : refreshsecret_admin!,
+      options: { expiresIn: "7d", jwtid: uuid }
+    })
+
+    successresponse({
+      res,
+      message: "login with gmail successfuly",
+      data: { access_token, refresh_token }
+    })
+  }
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+
+    const { decoded } = req
+
+    await this._redisservice.setvalue({
+      key: this._redisservice.revokedkey({
+        userid: decoded.id,
+        jti: decoded.jti!
+      }),
+      value: "revoked",
+      ttl: 60 * 60 * 24
+    })
+
+    successresponse({ res, message: "logout successfuly" })
+  }
+  forgetpassword = async (req: Request, res: Response, next: NextFunction) => {
+
+    const { email } = req.body
+
+    const user = await this._usermodel.findOne({
+      filter: {
+        email,
+        provider: providerenum.system,
+        confirmed: { $exists: true }
+      }
+    })
+
+    if (!user) {
+      throw new AppError("user not found")
+    }
+
+    const otp = await generateotp()
+
+    eventemitter.emit(EventEnum.forgetpassword, async () => {
+      await sendemail({
+        to: email,
+        subject: "reset password",
+        html: emailtemplete(otp)
+      })
+
+      await this._redisservice.setvalue({
+        key: this._redisservice.otp_key({ email, subject: EventEnum.forgetpassword }),
+        value: hash({ plain_text: `${otp}` }),
+        ttl: 60 * 2
+      })
+    })
+
+    successresponse({ res, message: "otp sent to email" })
+  }
+  updatepassword = async (req: Request, res: Response, next: NextFunction) => {
+
+    const { oldpassword, newpassword } = req.body
+    const { user } = req
+
+    const existuser = await this._usermodel.findOne({
+      filter: { _id: user._id }
+    })
+
+    if (!existuser) {
+      throw new AppError("user not found")
+    }
+
+    if (!compare({
+      plain_text: oldpassword,
+      cipher_text: existuser.password
+    })) {
+      throw new AppError("invalid old password")
+    }
+
+    await this._usermodel.findoneAndUpdate({
+      id: user._id ,
+      update: {
+        password: hash({ plain_text: newpassword }),
+        changecerdintial: Date.now()
+      }
+    })
+
+    successresponse({ res, message: "password updated successfuly" })
+  }
 }
 
 

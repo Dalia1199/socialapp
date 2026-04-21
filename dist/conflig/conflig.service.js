@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.redisurl = exports.Email = exports.password = exports.saltrounds = exports.mongourl = exports.Port = void 0;
+exports.Prefix_user = exports.Prefix_admin = exports.Prefix = exports.refreshsecret_admin = exports.secret_key_admin = exports.secret_key_user = exports.refreshsecretkey_user = exports.redisurl = exports.Email = exports.password = exports.saltrounds = exports.mongourl = exports.Port = void 0;
 const path_1 = require("path");
 const dotenv_1 = require("dotenv");
 const NODE_ENV = process.env.NODE_ENV;
@@ -12,3 +12,10 @@ exports.saltrounds = process.env.saltrounds;
 exports.password = process.env.password;
 exports.Email = process.env.Email;
 exports.redisurl = process.env.redisurl;
+exports.refreshsecretkey_user = process.env.refreshsecretkey_user;
+exports.secret_key_user = process.env.secret_key_user;
+exports.secret_key_admin = process.env.secret_key_admin;
+exports.refreshsecret_admin = process.env.refreshsecret_admin;
+exports.Prefix = process.env.prefix;
+exports.Prefix_admin = process.env.prefix_admin;
+exports.Prefix_user = process.env.prefix_user;
