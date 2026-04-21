@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.password = exports.saltrounds = exports.mongourl = exports.Port = void 0;
+exports.redisurl = exports.Email = exports.password = exports.saltrounds = exports.mongourl = exports.Port = void 0;
 const path_1 = require("path");
 const dotenv_1 = require("dotenv");
 const NODE_ENV = process.env.NODE_ENV;
@@ -10,3 +10,5 @@ exports.mongourl = process.env.mongourl;
 //الى راجع مش undefined
 exports.saltrounds = process.env.saltrounds;
 exports.password = process.env.password;
+exports.Email = process.env.Email;
+exports.redisurl = process.env.redisurl;

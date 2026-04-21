@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
-const enum_1 = require("../../common/enum/enum");
+const userenum_1 = require("../../common/enum/userenum");
 const zod_1 = require("zod");
 const userschema = new mongoose_1.default.Schema({
     fname: {
@@ -39,12 +39,12 @@ const userschema = new mongoose_1.default.Schema({
     },
     gender: {
         type: String,
-        enumm: enum_1.GenderEnum,
-        default: enum_1.GenderEnum.male
+        enumm: userenum_1.GenderEnum,
+        default: userenum_1.GenderEnum.male
     },
     role: {
         type: String,
-        enum: enum_1.RoleEnum
+        enum: userenum_1.RoleEnum
     },
     confirmed: Boolean,
     adress: {

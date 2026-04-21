@@ -33,9 +33,9 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signupschema = void 0;
+exports.confirmemailschema = exports.signupschema = void 0;
 const z = __importStar(require("zod"));
-const enum_1 = require("../../common/enum/enum");
+const userenum_1 = require("../../common/enum/userenum");
 exports.signupschema = {
     body: z.object({
         username: z.string({ error: "name is required" }).min(3),
@@ -43,7 +43,7 @@ exports.signupschema = {
         password: z.string().min(6),
         cpassword: z.string().min(6),
         age: z.number().min(18),
-        gender: z.enum(enum_1.GenderEnum),
+        gender: z.enum(userenum_1.GenderEnum),
         address: z.string().optional(),
         phone: z.string().optional()
     })
@@ -56,6 +56,12 @@ exports.signupschema = {
                 message: "password donotmatch"
             });
         }
+    })
+};
+exports.confirmemailschema = {
+    body: z.strictObject({
+        email: z.email("invalid email"),
+        code: z.string().length(6, "invalid code")
     })
 };
 // .refine((data)=>{

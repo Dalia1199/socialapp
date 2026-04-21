@@ -6,6 +6,7 @@ import { Port} from "./conflig/conflig.service";
 import { globalerrorhandler,AppError } from "./common/utilis/global-error-handler";
 import authRouter from "./Modules/auth/user.controller";
 import { checkconnection } from "./db/connectiondb";
+import redisService from "./common/service/redis.service";
  const app:express.Application =express();
  const port:number =Number(Port)
 
@@ -32,7 +33,7 @@ import { checkconnection } from "./db/connectiondb";
      app.use("/auth", authRouter)
 
      checkconnection()
-
+redisService.connect()
 
 
 

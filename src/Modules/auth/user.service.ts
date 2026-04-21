@@ -1,25 +1,68 @@
 import { NextFunction, Request, Response } from "express";
-import { issignuptype } from "./auth.dto";
+import { IsignupType,IconfirmemailType } from "./auth.dto";
 import { HydratedDocument, Model, Types } from "mongoose";
-import usermodel, { Iuser } from "../../db/models/user.model";
-import { BaseRepository } from "../../db/repositry/base.repository";
+import  usermodel, { Iuser } from "../../db/models/user.model";
 import { AppError } from "../../common/utilis/global-error-handler";
 import { userRepository } from "../../db/repositry/user repository ";
-import {  hash } from "node:crypto";
+import {  compare,  hash} from "../../common/utilis/security/hash";
+import { generateotp, sendemail } from "../../common/utilis/email/send email";
+import { emailtemplete } from "../../common/utilis/email/emai.templete";
+import { EventEnum } from "../../common/enum/event.enum";
+import { eventemitter } from "../../common/utilis/email/email.events";
+import { providerenum } from "../../common/enum/userenum";
+import { successresponse } from "../../common/utilis/response.success";
+import redisService from "../../common/service/redis.service";
 
 class userservice {
     private readonly _usermodel = new userRepository()
+    private readonly _redisservice = redisService
     constructor() {
     }
 
     signup = async (req: Request, res: Response, next: NextFunction) => {
-        const { email, password, age, gender }: issignuptype = req.body
-        //concept data to object 
-        const user: HydratedDocument<Iuser> = await this._usermodel.create({ email,
-             password:hash({plain_text:password}), 
-             age, gender } as Partial<Iuser>)
+        let { email, password, age, gender }: IsignupType = req.body
 
+        //concept data to object 
+       if(await this._usermodel.findOne({filter:{email}})){
+         throw new AppError("email already exists",409)
+        }
+     
+             const otp=await generateotp()
+             eventemitter.emit(EventEnum.confirmemail,async()=>{
+        await sendemail({to:email,subject:"welcome to our app",html:emailtemplete(otp)})
+        await this._redisservice.setvalue({ key: this._redisservice.otp_key({ email,subject: EventEnum.confirmemail }), value: hash({ plain_text: `${otp}` }), ttl: 60 * 2 })
+        await this._redisservice.setvalue({ key: this._redisservice.max_otp_key( email ), value: "1", ttl: 60 * 30 })
+             })
+        const user: HydratedDocument<Iuser> = await this._usermodel.create({
+            email,
+            password: hash({ plain_text: password }),
+            age, gender
+        } as Partial<Iuser>)
         res.status(200).json({ message: "user signed up successfuly", user })
+    }
+    confirmemail = async (req: Request, res: Response, next: NextFunction) => {
+        const { email, code }: IconfirmemailType= req.body
+        const otpexist = await this._redisservice.get(this._redisservice.otp_key({ email }))
+        if (!otpexist) {
+            throw new AppError("otp expired");
+
+        }
+        if (!compare({
+            plain_text: code, cipher_text: otpexist
+
+        })) {
+            throw new AppError("invalid otp ");
+        }
+        const user = await this._usermodel.findoneAndUpdate({
+            filter: { email, confirmed: { $exists: false }, provider: providerenum.system },
+            update: { confirmed: true }
+        })
+        if (!user) {
+            throw new  AppError("user not exist");
+        } 
+        await this._redisservice.deleletekey(this._redisservice.otp_key({ email }))
+        successresponse({ res, message: "email confirmed successfuly" })
+
     }
 
     signin = async (req: Request, res: Response, next: NextFunction) => {

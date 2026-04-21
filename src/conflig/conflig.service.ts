@@ -7,3 +7,5 @@ export const mongourl:string=process.env.mongourl!;
 //الى راجع مش undefined
 export const saltrounds:string=process.env.saltrounds!;
 export const password=process.env.password!
+export const Email = process.env.Email
+export const redisurl = process.env.redisurl

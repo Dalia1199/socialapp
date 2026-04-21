@@ -43,4 +43,5 @@ const validation_1 = require("../../common/middleware/validation");
 const uservalidation = __importStar(require("./user.validation"));
 authRouter.post("/signup", (0, validation_1.validation)(uservalidation.signupschema), user_service_1.default.signup);
 authRouter.post("/signin", user_service_1.default.signin);
+authRouter.patch("/confirm-email", (0, validation_1.validation)(uservalidation.confirmemailschema), user_service_1.default.confirmemail);
 exports.default = authRouter;

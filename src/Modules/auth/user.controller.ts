@@ -6,6 +6,8 @@ import * as uservalidation  from "./user.validation";
 
 authRouter.post("/signup",validation(uservalidation.signupschema),userservice.signup)
 authRouter.post("/signin", userservice.signin)
+authRouter.patch("/confirm-email", validation(uservalidation.confirmemailschema), userservice.confirmemail)
+
 
 
 
