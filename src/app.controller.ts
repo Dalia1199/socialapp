@@ -7,6 +7,7 @@ import { globalerrorhandler,AppError } from "./common/utilis/global-error-handle
 import authRouter from "./Modules/auth/user.controller";
 import { checkconnection } from "./db/connectiondb";
 import redisService from "./common/service/redis.service";
+import usermodel from "./db/models/user.model";
  const app:express.Application =express();
  const port:number =Number(Port)
 
@@ -30,6 +31,19 @@ import redisService from "./common/service/redis.service";
         res.status(200).json({message:"welcome on socialmedia app 😊😊"})
 
     })
+    //mongoose hooks
+    async function test(){
+        const user =new usermodel({
+            username:"dalia",
+            email: `${Date.now()}@gmail.com`,
+            password:"123",
+        
+            age:26,})
+        await user.save()
+        test()
+
+             
+    }
      app.use("/auth", authRouter)
 
      checkconnection()
@@ -43,7 +57,7 @@ redisService.connect()
 
     app.use("{/*demo}",(req:Request,res:Response,next:NextFunction)=>{
         // throw new Error(`url ${req.originalUrl}with method ${req.method} not found`,{cause:404})
-        throw new AppError( )
+        throw new AppError( "url not found", 404 )
     })
      app.use(globalerrorhandler)
 

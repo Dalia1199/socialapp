@@ -13,6 +13,7 @@ authRouter.post("/signup-gmail", userservice.signupwithgmail)
 authRouter.post("/login-gmail", userservice.loginwithgmail)
 authRouter.post("/logout", authentication, userservice.logout)
 authRouter.post("/forget-password", userservice.forgetpassword)
+authRouter.patch("/reset-password", userservice.resetpassword)
 authRouter.patch("/update-password", authentication, userservice.updatepassword)
 
 

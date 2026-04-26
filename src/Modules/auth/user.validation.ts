@@ -40,3 +40,7 @@ export const confirmemailschema :any={
 // },{
 //   error:"password do not match",
 //   path:["cpassword"] })
+export const resendotpschema =
+{ body: z.strictObject({
+  email: z.email("invalid email")
+}) }

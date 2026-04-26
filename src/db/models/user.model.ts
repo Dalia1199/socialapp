@@ -1,6 +1,7 @@
 import mongoose, { Types } from "mongoose";
-import { GenderEnum, RoleEnum } from "../../common/enum/userenum";
-import { string,  } from "zod";
+import { GenderEnum, providerenum, RoleEnum } from "../../common/enum/userenum";
+import { string, } from "zod";
+import { hash } from "crypto";
 
 
 export interface Iuser {
@@ -9,6 +10,7 @@ export interface Iuser {
     lname: string,
     username: string,
     email: string,
+    provider?: providerenum,
     age: number,
     phone?: string,
     adress?: string,
@@ -45,18 +47,27 @@ const userschema = new mongoose.Schema<Iuser>({
     },
     password: {
         type: String,
-        required: true,
+        required: function (): boolean {
+            return this.provider == providerenum.system ? true : false
+        },
 
         trim: true,
         minLength: 6
     },
+    provider: {
+        type: String,
+        enum: providerenum,
+        default: providerenum.system
+    },
     age: {
         type: Number,
-        required: true
+        required: function (): boolean {
+            return this.provider == providerenum.system ? true : false
+        },
     },
     gender: {
         type: String,
-        enumm: GenderEnum,
+        enum: GenderEnum,
         default: GenderEnum.male
     },
     role: {
@@ -82,6 +93,13 @@ userschema.virtual("username").get(function () {
 }).set(function (val: string) {
     this.set({ fname: val.split(" ")[0], lname: val.split(" ")[1] })
 })
-
+userschema.pre("save", function () {
+    console.log("pre save hook");
+    console.log(this)
+    console.log (this.modifiedPaths());
+    if (this.isModified("password")) {
+        this.password = hash({ plaintext: this.password })
+    }
+})
 const usermodel = mongoose.models.user || mongoose.model<Iuser>("user", userschema)
 export default usermodel
