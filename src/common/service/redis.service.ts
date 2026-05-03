@@ -3,6 +3,7 @@ import { createClient } from "redis"
 import { redisurl } from "../../conflig/conflig.service"
 import { Types } from "mongoose";
 import { EventEnum } from "../enum/event.enum";
+import { fchmod } from "fs";
 
 export class redisService {
     private readonly client: RedisClientType
@@ -128,5 +129,25 @@ export class redisService {
 
     }
 
-}}
+}
+//notification 
+ key(userid:Types.ObjectId) {
+    return `user:fcm:${userid}`;   
+}
+ async addfcm({userid,fcmtoken}:{userid:Types.ObjectId,fcmtoken:string}){
+    return await this.client.sAdd(this.key(userid),fcmtoken);
+}
+     async removefcm({ userid, fcmtoken }: { userid: Types.ObjectId, fcmtoken: string }) {
+        return await this.client.sRem(this.key(userid), fcmtoken);
+    }
+    async getfcms( userid: Types.ObjectId) {
+        return await this.client.sMembers(this.key(userid));
+    }
+     async hasfcms(userid: Types.ObjectId) {
+        return await this.client.sCard(this.key(userid));
+    }
+ async removefcmuser(userid:Types.ObjectId){
+    return await this.client.del(this.key(userid));
+}
+}
     export default new redisService()

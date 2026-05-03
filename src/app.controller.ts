@@ -12,6 +12,7 @@ import { s3service } from "./common/service/s3.servics";
 import { successresponse } from "./common/utilis/response.success";
 import {pipeline } from "stream/promises";
 import path from "path";
+// import notificationService from "./common/service/notification.service";
  const app:express.Application =express();
  const port:number =Number(Port)
 
@@ -22,8 +23,7 @@ import path from "path";
         max:100,
         message:"too many requests from this ip,please try again later",
         handler:(req:Request,res:Response,next:NextFunction)=>{
-            // res.status(429).json({message: "too many requests from this ip,please try again later"
-            // })
+            
             throw new AppError(`too many requests from this ip,please try again later`,429)
         },
         legacyHeaders:false
@@ -31,23 +31,22 @@ import path from "path";
      app.use(express.json())
 
     app.use(cors(),helmet(),limter)
-    app.get("/",(req:Request,res:Response,next:NextFunction)=>{
+     app.get("/", (req: Request, res: Response, next: NextFunction)=>{
         res.status(200).json({message:"welcome on socialmedia app 😊😊"})
-
     })
-    //mongoose hooks
-    // async function test(){
-    //     const user =new usermodel({
-    //         username:"dalia",
-    //         email: `${Date.now()}@gmail.com`,
-    //         password:"123",
-        
-    //         age:26,})
-    //     await user.save()
-    //     test()
+    // app.post("/send-notification",(req:Request,res:Response,next:NextFunction)=>{
+    //     notificationService.sendnotification({
+    //         token:req.body.token,
+    //         data:{
+    //             title:"welcome to social app",
+    //             body:"have agood day"
+    //         }
 
-             
-    // }
+    //      })
+    //     console.log({token:req.body.token});
+    // })
+
+    
      app.use("/auth", authRouter)
 
      app.get("/upload",async(req:Request,res:Response,next:NextFunction)=>{

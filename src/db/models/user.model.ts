@@ -113,5 +113,31 @@ userschema.virtual("username").get(function () {
 //         this.password = hash({ plaintext: this.password })
 //     }
 // })
+//mongoose hooks
+    // async function test(){
+    //     const user =new usermodel({
+    //         username:"dalia",
+    //         email: `${Date.now()}@gmail.com`,
+    //         password:"123",
+        
+    //         age:26,})
+    //     await user.save()
+    //     test()
+
+             
+    // }
+    //mongoose hooks
+        // async function test(){
+        //     const user =new usermodel({
+        //         username:"dalia",
+        //         email: `${Date.now()}@gmail.com`,
+        //         password:"123",
+            
+        //         age:26,})
+        //     await user.save()
+        //     test()
+    
+                 
+        // }
 const usermodel = mongoose.models.user || mongoose.model<Iuser>("user", userschema)
 export default usermodel

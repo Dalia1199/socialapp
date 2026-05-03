@@ -19,13 +19,15 @@ import { OAuth2Client } from "google-auth-library";
 import { TokenPayload } from "google-auth-library";
 import { string } from "zod";
 import { s3service } from "../../common/service/s3.servics";
-import { xContentTypeOptions } from "helmet";
+import notificationService from "../../common/service/notification.service";
 
 class userservice {
     private readonly _usermodel = new userRepository()
     private readonly _redisservice = redisService
     private readonly _tokenservice = tokenService
     private readonly _s3service=new s3service()
+    private readonly notificationservice=notificationService
+
     constructor() {
     }
 
@@ -76,7 +78,7 @@ class userservice {
     }
 
   signin = async (req: Request, res: Response, next: NextFunction) => {
-    const { email, password } : IsigninType = req.body
+    const { email, password,fcm} : IsigninType = req.body
     const user = await this._usermodel.findOne({
        filter: { email ,
         provider: providerenum.system ,
@@ -99,6 +101,15 @@ class userservice {
               secret_key: user?.role == RoleEnum.user ? refreshsecretkey_user! : refreshsecret_admin!,
             options: { expiresIn: "7d",jwtid:uuid }
           })
+          if (fcm){
+            await  this._redisservice.addfcm({userid:user._id,fcmtoken:fcm})
+            const tokens =await this._redisservice.getfcms(user._id)
+            await this._redisservice.getfcms(user._id)
+            await this.notificationservice.sendnotifications({tokens,data:{
+              title:`hi${user.fname}`,
+              body:`new login at ${new Date()}`
+            }})
+          }
 successresponse({ res, message: "user signed in successfuly", data: { access_token,refresh_token}})
 
     }
