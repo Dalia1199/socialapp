@@ -18,11 +18,14 @@ import { refreshsecret_admin, refreshsecretkey_user, secret_key_admin, secret_ke
 import { OAuth2Client } from "google-auth-library";
 import { TokenPayload } from "google-auth-library";
 import { string } from "zod";
+import { s3service } from "../../common/service/s3.servics";
+import { xContentTypeOptions } from "helmet";
 
 class userservice {
     private readonly _usermodel = new userRepository()
     private readonly _redisservice = redisService
     private readonly _tokenservice = tokenService
+    private readonly _s3service=new s3service()
     constructor() {
     }
 
@@ -370,7 +373,7 @@ successresponse({ res, message: "password reset successfuly" })
         audience: client_id!
       })
 
-      const payload = ticket.getPayload()
+      const payload = ticket.getPayload();
 
       if (!payload) {
         throw new AppError("invalid google token")
@@ -397,7 +400,7 @@ successresponse({ res, message: "password reset successfuly" })
       }
 
       const uuid = randomUUID()
-
+//login
       const access_token = this._tokenservice.generatetoken({
         payload: { id: user._id, email: user.email },
         secret_key: user?.role == RoleEnum.user ? secret_key_user! : secret_key_admin!,
@@ -414,6 +417,42 @@ successresponse({ res, message: "password reset successfuly" })
       next(error)
     }
   }
-}
+  uploadimage=async(req:Request,res:Response,next:NextFunction)=>{
+    const urls=await  this._s3service.uploadfiles({
+      files=req.files as Express.Multer.File[],
+      path:"users/many",
+      islarge:true
+    
+
+    })
+    successresponse({ res, data: urls})
+
+  }
+  upload = async (req: Request, res: Response, next: NextFunction) => {
+    const{Filename,ContentType}=req.body
+    const {url,key}}=await this._s3service.CreatePresignedUrl({
+      Filename,
+      ContentType,
+      path:"users/${req.user._id}",
+
+
+    })
+   await this._usermodel.findoneAndUpdate({
+    filter:{_id:req?.user?._id},
+    update:{profilepic:Key}
+   })
+    successresponse({ res, data: {Key,url }})
+
+  }
+upload files= async (req: Request, res: Response, next: NextFunction) => {
+const urls=await this._s3service.uploadfiles({
+  files:req.files as Express.Multer.File[],
+  path:`users/${req?.user?._id}`,
+  islarge:true
+})
+successresponse({ res, data:  urls  })
+
+  }
+
 export default new userservice()
 // انا مش محتاجه ابعت parameter فبعت instance لكن لو عايزه ابعت parameter هبعت class نفسه

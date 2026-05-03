@@ -16,3 +16,9 @@ export const refreshsecret_admin = process.env.refreshsecret_admin
 export const Prefix = process.env.prefix
 export const Prefix_admin = process.env.prefix_admin
 export const Prefix_user = process.env.prefix_user
+export const AWS_BUCKET_NAME=process.env.AWS_BUCKET_NAME!
+export const AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY!
+export const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY!
+export const AWS_REGION = process.env.AWS_REGION!
+
+

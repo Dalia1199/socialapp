@@ -21,6 +21,7 @@ export interface Iuser {
     role?: RoleEnum,
     createdAt: Date,
     updatedAt: Date,
+    profilepic:String
 
 
 }
@@ -39,6 +40,7 @@ const userschema = new mongoose.Schema<Iuser>({
         maxLength: 7,
         trim: true
     },
+    profilepic:String,
     email: {
         type: String,
         required: true,
@@ -93,13 +95,23 @@ userschema.virtual("username").get(function () {
 }).set(function (val: string) {
     this.set({ fname: val.split(" ")[0], lname: val.split(" ")[1] })
 })
-userschema.pre("save", function () {
-    console.log("pre save hook");
-    console.log(this)
-    console.log (this.modifiedPaths());
-    if (this.isModified("password")) {
-        this.password = hash({ plaintext: this.password })
-    }
-})
+// userschema.pre("findone",function(){
+//     console.log("=====prehook====");
+//     console.log(this.getquery());
+//     const{paranoid,....rest}=this.getquery()
+//     console.log({rest});
+//     if (paranoid==false){
+//         this.setquery({..rest});
+    
+//     }this.setquery({..rest,deletedAT:{$exists:false}})
+// })
+// userschema.pre("save", function () {
+//     console.log("pre save hook");
+//     console.log(this)
+//     console.log (this.modifiedPaths());
+//     if (this.isModified("password")) {
+//         this.password = hash({ plaintext: this.password })
+//     }
+// })
 const usermodel = mongoose.models.user || mongoose.model<Iuser>("user", userschema)
 export default usermodel
