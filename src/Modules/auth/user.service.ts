@@ -107,7 +107,7 @@ class userservice {
             await this._redisservice.getfcms(user._id)
             await this.notificationservice.sendnotifications({tokens,data:{
               title:`hi${user.fname}`,
-              body:`new login at ${new Date()}`
+              body:`new login at ${new Date()}`gi
             }})
           }
 successresponse({ res, message: "user signed in successfuly", data: { access_token,refresh_token}})

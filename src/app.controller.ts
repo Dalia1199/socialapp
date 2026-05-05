@@ -12,6 +12,7 @@ import { s3service } from "./common/service/s3.servics";
 import { successresponse } from "./common/utilis/response.success";
 import {pipeline } from "stream/promises";
 import path from "path";
+import postrouter from "./Modules/posts/post.controller";
 // import notificationService from "./common/service/notification.service";
  const app:express.Application =express();
  const port:number =Number(Port)
@@ -47,7 +48,7 @@ import path from "path";
     // })
 
     
-     app.use("/auth", authRouter)
+     
 
      app.get("/upload",async(req:Request,res:Response,next:NextFunction)=>{
         const {foldername}=req.query as{foldername}
@@ -95,13 +96,14 @@ res.setHeader("Content-type",result.ContentType!)
     if (download &&download=== "true") {
         res.setHeader("Content-Disposition", `attachment; filename="${path.pop()}"`);
 }
-    await Pipeline(stream,res)
+    await pipeline(stream,res)
     
 })
      checkconnection()
-redisService.connect()
+ await redisService.connect()
 
-
+     app.use("/auth", authRouter)
+     app.use("/posts",postrouter)
 
 
 
