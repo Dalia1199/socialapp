@@ -36,7 +36,7 @@ const authentication = async (req, res, next) => {
     if (!decoded || !decoded?.id) {
         throw new global_error_handler_1.AppError("Invalid token payload");
     }
-    const user = await usermodel.findOne({ filter: { id: decoded.id } });
+    const user = await usermodel.findOne({ filter: { _id: decoded.id } });
     if (!user) {
         throw new global_error_handler_1.AppError("User not found", 400);
     }

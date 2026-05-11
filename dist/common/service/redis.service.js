@@ -18,7 +18,7 @@ class redisService {
         });
     }
     async connect() {
-        this.client.connect();
+        await this.client.connect();
         console.log("connected to redis successfuly");
     }
     ;
@@ -35,7 +35,7 @@ class redisService {
         return `otp ::${email}::max_tries`;
     };
     block_otp_key = (email) => {
-        return ` ${this.otp_key({ email })}::blocked `;
+        return `${this.otp_key({ email })}::blocked`;
     };
     setvalue = async ({ key, value, ttl }) => {
         try {
@@ -119,6 +119,25 @@ class redisService {
             console.log(error, "fail to get keys  operation ");
         }
     };
+    //notification 
+    key(userid) {
+        return `user:fcm:${userid}`;
+    }
+    async addfcm({ userid, fcmtoken }) {
+        return await this.client.sAdd(this.key(userid), fcmtoken);
+    }
+    async removefcm({ userid, fcmtoken }) {
+        return await this.client.sRem(this.key(userid), fcmtoken);
+    }
+    async getfcms(userid) {
+        return await this.client.sMembers(this.key(userid));
+    }
+    async hasfcms(userid) {
+        return await this.client.sCard(this.key(userid));
+    }
+    async removefcmuser(userid) {
+        return await this.client.del(this.key(userid));
+    }
 }
 exports.redisService = redisService;
 exports.default = new redisService();

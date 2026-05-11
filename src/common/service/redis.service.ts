@@ -19,7 +19,7 @@ export class redisService {
         })
     }
     async connect(){
-        this.client.connect()
+        await  this.client.connect()
     console.log("connected to redis successfuly" )
     };
     revokedkey = ({ userid, jti }: { userid: Types.ObjectId, jti: string }) => {
@@ -35,9 +35,9 @@ export class redisService {
  max_otp_key = (email: string) => {
     return `otp ::${email}::max_tries`
 }
- block_otp_key = (email: string) => {
-    return ` ${this.otp_key({ email })}::blocked `
-}
+    block_otp_key = (email: string) => { 
+        return `${this.otp_key({ email })}::blocked`
+    }
 
  setvalue = async ({ key, value, ttl }: { key: string, value: string, ttl: number }) => {
     try {
@@ -140,7 +140,7 @@ export class redisService {
      async removefcm({ userid, fcmtoken }: { userid: Types.ObjectId, fcmtoken: string }) {
         return await this.client.sRem(this.key(userid), fcmtoken);
     }
-    async getfcms( userid: Types.ObjectId) {
+    async getfcms(userid: Types.ObjectId) {
         return await this.client.sMembers(this.key(userid));
     }
      async hasfcms(userid: Types.ObjectId) {

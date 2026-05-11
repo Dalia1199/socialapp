@@ -1,4 +1,4 @@
- import express, { NextFunction,Request,response } from "express";
+ import express, { NextFunction,Request,Response } from "express";
  import cors from "cors"
  import helmet from "helmet";
  import {rateLimit,RateLimitRequestHandler} from "express-rate-limit"
@@ -17,7 +17,7 @@ import postrouter from "./Modules/posts/post.controller";
  const app:express.Application =express();
  const port:number =Number(Port)
 
- const bootstrap=()=>{
+ const bootstrap= async()=>{
 
     const limter=rateLimit({
         windowMs:15*60*1000,
@@ -51,34 +51,34 @@ import postrouter from "./Modules/posts/post.controller";
      
 
      app.get("/upload",async(req:Request,res:Response,next:NextFunction)=>{
-        const {foldername}=req.query as{foldername}
+        const {foldername}=req.query as{foldername:string}
         console.log({foldername});
         let result =await new s3service().getfiles(foldername)
-        let resultmapped=result.contents?.map((file)=>{
-            return {key:file.key}
+        let resultmapped=result.Contents?.map((file)=>{
+            return {key:file.Key}
         })
         successresponse({res,data:resultmapped})
      })
      //delete
-     app.get("/upload", async (req: Request, res: Response, next: NextFunction) => {
+     app.get("/upload-file", async (req: Request, res: Response, next: NextFunction) => {
          const { Key } = req.query as { Key :string}
          console.log({ Key });
          let result = await new s3service().deletefile(Key)
-        
-         })
          successresponse({ res, data: result })
+
+         })
      //delte files
-app.get("/upload", async (req: Request, res: Response, next: NextFunction) => {
-  const {foldername}=req.body as {foldername:string}
-  let result await new s3service().deletefolder(foldername)
-successresponse({ res, data: result })
+     app.get("/upload-files", async (req: Request, res: Response, next: NextFunction) => {
+     const {foldername}=req.body as {foldername:string}
+     let result = await new s3service().deletefolder(foldername) 
+     successresponse({ res, data: result })
      })
 
 
 
      app.get("/upload/pre-signed/*path",async(req:Request,res:Response,next:NextFunction)=>{
         const{path}=req.params as{path:string[]}
-        const {download}=req.query as {downlload:string}
+         const { download } = req.query as { download:string}
         const key=path.join("/")
         const url=await new s3service().getpresignurl({key,download})
         successresponse({res,data:url})
@@ -89,7 +89,7 @@ app.get("/upload/*path",async(req:Request,res:Response,next:NextFunction)=>{
     const {download}=req.query
     const Key=path.join("/") as string
     const result=await new s3service().getfile(Key)
-const stream=result.body as NodeJs.Readablestream
+    const stream = result.Body as NodeJS.ReadableStream
 res.setHeader("Content-type",result.ContentType!)
 
     res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
@@ -100,7 +100,7 @@ res.setHeader("Content-type",result.ContentType!)
     
 })
      checkconnection()
- await redisService.connect()
+    //  await redisService.connect()
 
      app.use("/auth", authRouter)
      app.use("/posts",postrouter)

@@ -33,49 +33,22 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resendotpschema = exports.confirmemailschema = exports.signinschema = exports.signupschema = void 0;
+exports.generalrules = void 0;
+const mongoose_1 = require("mongoose");
 const z = __importStar(require("zod"));
-const userenum_1 = require("../../common/enum/userenum");
-exports.signupschema = {
-    body: z.object({
-        username: z.string({ error: "name is required" }).min(3),
-        email: z.string().email(),
-        password: z.string().min(6),
-        cpassword: z.string().min(6),
-        age: z.number().min(18),
-        gender: z.enum(userenum_1.GenderEnum),
-        address: z.string().optional(),
-        phone: z.string().optional()
-    })
-        .superRefine((data, ctx) => {
-        console.log(data);
-        if (data.password !== data.cpassword) {
-            ctx.addIssue({
-                code: "custom",
-                path: ["cpaasword"],
-                message: "password donotmatch"
-            });
-        }
+exports.generalrules = {
+    id: z.string().refine((value) => {
+        return mongoose_1.Types.ObjectId.isValid(value);
+    }, {
+        message: "invalid id"
+    }),
+    file: z.object({
+        fieldnamw: z.string(),
+        originalname: z.string(),
+        encoding: z.string(),
+        mimetype: z.string(),
+        buffer: z.any().optional(),
+        path: z.string().optional(),
+        size: z.number()
     })
 };
-exports.signinschema = {
-    body: z.strictObject({
-        email: z.email("invalid email"),
-        password: z.string().min(6, "invalid password"),
-        fcm: z.string()
-    })
-};
-exports.confirmemailschema = {
-    body: z.strictObject({
-        email: z.email("invalid email"),
-        code: z.string().length(6, "invalid code")
-    })
-};
-// .refine((data)=>{
-//     return data.password==data.cpassword
-// },{
-//   error:"password do not match",
-//   path:["cpassword"] })
-exports.resendotpschema = { body: z.strictObject({
-        email: z.email("invalid email")
-    }) };

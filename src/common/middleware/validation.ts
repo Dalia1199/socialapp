@@ -53,7 +53,7 @@ export const validation =(Schema:SchemaType)=>{
 
             throw new AppError(errorvalidation,400)
         }
-        
+        next();
     }
 
 }

@@ -33,49 +33,34 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.resendotpschema = exports.confirmemailschema = exports.signinschema = exports.signupschema = void 0;
+exports.createpostschema = void 0;
 const z = __importStar(require("zod"));
-const userenum_1 = require("../../common/enum/userenum");
-exports.signupschema = {
-    body: z.object({
-        username: z.string({ error: "name is required" }).min(3),
-        email: z.string().email(),
-        password: z.string().min(6),
-        cpassword: z.string().min(6),
-        age: z.number().min(18),
-        gender: z.enum(userenum_1.GenderEnum),
-        address: z.string().optional(),
-        phone: z.string().optional()
-    })
-        .superRefine((data, ctx) => {
-        console.log(data);
-        if (data.password !== data.cpassword) {
+const post_enum_1 = require("../../common/enum/post.enum");
+const generalrules_1 = require("../../common/utilis/generalrules");
+exports.createpostschema = {
+    body: z.strictObject({
+        content: z.string().optional(),
+        attachments: z.array(generalrules_1.generalrules.file).optional(),
+        tags: z.array(generalrules_1.generalrules.id).optional(),
+        availabilit: z.enum(post_enum_1.availability_enum).default(post_enum_1.availability_enum.puplic),
+        allowcomment: z.enum(post_enum_1.allow_comment_enum).default(post_enum_1.allow_comment_enum.allow),
+    }).superRefine((args, ctx) => {
+        if (!args.content && !args.attachments?.length) {
             ctx.addIssue({
                 code: "custom",
-                path: ["cpaasword"],
-                message: "password donotmatch"
+                path: ["content"],
+                message: "content is required"
             });
+        }
+        if (args?.tags) {
+            const uniquetags = new Set(args.tags);
+            if (args.tags.length !== uniquetags.size) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["tags"],
+                    message: "duplicate tags"
+                });
+            }
         }
     })
 };
-exports.signinschema = {
-    body: z.strictObject({
-        email: z.email("invalid email"),
-        password: z.string().min(6, "invalid password"),
-        fcm: z.string()
-    })
-};
-exports.confirmemailschema = {
-    body: z.strictObject({
-        email: z.email("invalid email"),
-        code: z.string().length(6, "invalid code")
-    })
-};
-// .refine((data)=>{
-//     return data.password==data.cpassword
-// },{
-//   error:"password do not match",
-//   path:["cpassword"] })
-exports.resendotpschema = { body: z.strictObject({
-        email: z.email("invalid email")
-    }) };

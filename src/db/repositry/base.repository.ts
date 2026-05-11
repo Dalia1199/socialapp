@@ -72,15 +72,19 @@ export  abstract class BaseRepository<TDocument> {
   }
   async findoneAndUpdate({
     id,
+    filter,
     update,
     options,
   }: {
-    id: Types.ObjectId;
+    id?: Types.ObjectId;
+    filter?: QueryFilter<TDocument>;
     update: UpdateQuery<TDocument>;
     options?: QueryOptions<TDocument>;
   }): Promise<HydratedDocument<TDocument> | null> {
-    return await this.model.findByIdAndUpdate(id, update, { new: true, ...options }
-    );
+    if (id) {
+      return await this.model.findByIdAndUpdate(id, update, { new: true, ...options });
+    }
+    return await this.model.findOneAndUpdate(filter as QueryFilter<TDocument>, update, { new: true, ...options });
   }
 
   async findByIdAndDelete(
@@ -95,5 +99,40 @@ export  abstract class BaseRepository<TDocument> {
 
   ): Promise<HydratedDocument<TDocument> | null> {
     return  this.model.findOneAndDelete(filter);
+  }
+  async paginate<T>({
+    page,
+    limit,
+    sort,
+    populate,
+    search,
+
+  }:{
+    page?:number,
+    limit?:number,
+    sort?:any,
+    populate?:any,
+    search?:QueryFilter<T>
+  }){
+    page=+page!||1
+    limit=+limit!||1
+    if(page<1)page=1
+    if(limit<1)limit=2
+    const skip=(page-1)*limit
+    const [data,totaldocs]=await Promise.all([
+
+      await this.model.find({...(search??{})}).limit(limit).skip(skip).sort(sort).populate(populate),
+      await this.model.countDocuments({...(search??{})})
+    ])
+const totalpages=Math.ceil(totaldocs/limit)
+return {meta: {
+  currentpage:page,
+  totalpages,
+  limit,
+  totaldocs
+},
+data
+}
+
   }
 }

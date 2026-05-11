@@ -1,4 +1,3 @@
-import { file, object, promise, string } from "zod"
 import { AWS_ACCESS_KEY, AWS_BUCKET_NAME, AWS_REGION, AWS_SECRET_ACCESS_KEY } from "../../conflig/conflig.service"
 import { store_enum } from "../enum/multerenum"
 import  fs from "node:fs"
@@ -57,7 +56,7 @@ export class s3service{
 
     }: {
         file: Express.Multer.File,
-        store_type?: store_enum.memory,
+            store_type?: store_enum
         path?: string,
         ACL?: ObjectCannedACL
     }): Promise<string> {
@@ -102,7 +101,7 @@ export class s3service{
         }))
     } else{
             urls = await Promise.all(files.map((file) => {
-                return this.uploadfiles({ files, store_type, ACL, path })
+                return this.uploadfile({ file, store_type, ACL, path })
             }))
 
     }
@@ -122,16 +121,16 @@ expiresIn?:number
     const key =`social_media_app/${path}/${randomUUID()}_${Filename}`
     const command=new PutObjectCommand({
         Bucket: AWS_BUCKET_NAME,
-        Key,
+        Key:key,
         ContentType
 
     })
     const url=await getSignedUrl(this.client,command,{expiresIn})
     return{url,key}
 }
-    async getfile(Key: String){
-        const command=new GetObjectAclCommand({
-            Bucket:AWS_BUCKET_NAME,
+    async getfile(Key: string) { 
+        const command = new GetObjectCommand({
+            Bucket: AWS_BUCKET_NAME,
             Key
         })
         return await this.client.send(command)
@@ -143,22 +142,22 @@ expiresIn?:number
         })
         return await this.client.send(command)
     }
-    async deletefile(key: String) {
+    async deletefile(key: string) { 
         const command = new DeleteObjectCommand({
             Bucket: AWS_BUCKET_NAME,
-            key
+            Key: key 
         })
         return await this.client.send(command)
     }
-    async deletefiles(keys: String[]) {
-        const keymapped=keys.map((k)=>{
-            return {Key:k}
+    async deletefiles(keys: string[]) { 
+        const keymapped = keys.map((k) => {
+            return { Key: k }
         })
         const command = new DeleteObjectsCommand({
             Bucket: AWS_BUCKET_NAME,
-            Delete:{
-                Objects:keymapped,
-                Quiet:false
+            Delete: {
+                Objects: keymapped,
+                Quiet: false
             },
         })
         return await this.client.send(command)
@@ -171,25 +170,25 @@ expiresIn?:number
        
         return await this.deletefiles(keymapped as string[])
     }
-    async getpresignedurl({
+    async getpresignurl({ 
         key,
-        expiresIn=60,
+        expiresIn = 60,
         download
-    }:{
-        Key:string,
-            expiresIn?:number,
-            downlad?:string|undefined
-        
-    }){
-        console.log(download,"downlad");
-        const command =new GetObjectCommand({
-            Bucket:AWS_BUCKET_NAME,
-            Key,
-            ResponseContentDisposition:`attachment;filename="${key.split("/").pop()}"`
+    }: {
+        key: string,  
+        expiresIn?: number,
+        download?: string | undefined 
+
+    }) {
+        console.log(download, "downlad");
+        const command = new GetObjectCommand({
+            Bucket: AWS_BUCKET_NAME,
+            Key: key, // FIX: was Key (undefined), use key parameter
+            ResponseContentDisposition: `attachment;filename="${key.split("/").pop()}"`
         })
-  const url=await getSignedUrl(this.client,command,{expiresIn})
-  return url
-}
+        const url = await getSignedUrl(this.client, command, { expiresIn })
+        return url
+    }
 
 }
 

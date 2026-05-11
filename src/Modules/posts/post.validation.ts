@@ -31,3 +31,35 @@ export const createpostschema = {
     }
   })
 }
+
+  export const likepostschema={
+    params:z.strictObject({
+        postid:generalrules.id
+    })
+  
+}
+export const updatepostschema = {
+    body: z.strictObject({
+        content: z.string().optional(),
+        attachments: z.array(generalrules.file).optional(),
+        removefiles:z.array(z.string()).optional(),
+        tags: z.array(generalrules.id).optional(),
+        availabilit: z.enum(availability_enum).default(availability_enum.puplic),
+        allowcomment: z.enum(allow_comment_enum).default(allow_comment_enum.allow),
+        removetags:z.array(generalrules.id).optional(),
+    }).superRefine((args, ctx) => {
+        
+        if (args?.tags) {
+            const uniquetags = new Set(args.tags)
+            if (args.tags.length !== uniquetags.size) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["tags"],
+                    message: "duplicate tags"
+                })
+
+            }
+        }
+    }),
+    params:likepostschema.params
+}

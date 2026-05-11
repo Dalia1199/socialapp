@@ -33,8 +33,11 @@ class BaseRepository {
     async findByIdAndUpdate({ id, update, options, }) {
         return await this.model.findByIdAndUpdate(id, update, { new: true, ...options });
     }
-    async findoneAndUpdate({ id, update, options, }) {
-        return await this.model.findByIdAndUpdate(id, update, { new: true, ...options });
+    async findoneAndUpdate({ id, filter, update, options, }) {
+        if (id) {
+            return await this.model.findByIdAndUpdate(id, update, { new: true, ...options });
+        }
+        return await this.model.findOneAndUpdate(filter, update, { new: true, ...options });
     }
     async findByIdAndDelete(id) {
         return await this.model.findByIdAndDelete(id);

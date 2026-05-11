@@ -12,12 +12,11 @@ import { eventemitter } from "../../common/utilis/email/email.events";
 import { providerenum, RoleEnum } from "../../common/enum/userenum";
 import { successresponse } from "../../common/utilis/response.success";
 import redisService from "../../common/service/redis.service";
-import { Hash, randomUUID } from "crypto";
+import { randomUUID } from "crypto";
 import tokenService from "../../common/service/token service";
 import { refreshsecret_admin, refreshsecretkey_user, secret_key_admin, secret_key_user} from "../../conflig/conflig.service";
 import { OAuth2Client } from "google-auth-library";
 import { TokenPayload } from "google-auth-library";
-import { string } from "zod";
 import { s3service } from "../../common/service/s3.servics";
 import notificationService from "../../common/service/notification.service";
 
@@ -30,6 +29,7 @@ class userservice {
 
     constructor() {
     }
+
 
     signup = async (req: Request, res: Response, next: NextFunction) => {
         let { email, password, age, gender }: IsignupType = req.body
@@ -105,9 +105,10 @@ class userservice {
             await  this._redisservice.addfcm({userid:user._id,fcmtoken:fcm})
             const tokens =await this._redisservice.getfcms(user._id)
             await this._redisservice.getfcms(user._id)
-            await this.notificationservice.sendnotifications({tokens,data:{
+            await this.notificationservice.sendnotifications({
+              tokens,data:{
               title:`hi${user.fname}`,
-              body:`new login at ${new Date()}`gi
+              body:`new login at ${new Date()}`
             }})
           }
 successresponse({ res, message: "user signed in successfuly", data: { access_token,refresh_token}})
@@ -200,38 +201,38 @@ forgetpassword = async (req: Request, res: Response, next: NextFunction) => {
     throw new AppError("user not found")
   }
 
-  await this.sendEmailOtp({ email, subject: EventEnum.forgetpassword })
+  await this.sendemailotp({ email, subject: EventEnum.forgetpassword })
 
   successresponse({ res, message: "otp sent to email" })
 }
 
-// private sendEmailOtp = async ({
-//   email,
-//   subject
-// }: {
-//   email: string
-//   subject: EventEnum
-// }) => {
-//   const otp = await generateotp()
+private sendEmailOtp = async ({
+  email,
+  subject
+}: {
+  email: string
+  subject: EventEnum
+}) => {
+  const otp = await generateotp()
 
-//   await sendemail({
-//     to: email,
-//     subject: "Reset password code",
-//     html: emailtemplete(otp)
-//   })
+  await sendemail({
+    to: email,
+    subject: "Reset password code",
+    html: emailtemplete(otp)
+  })
 
-//   await this._redisservice.setvalue({
-//     key: this._redisservice.otp_key({ email, subject }),
-//     value: hash({ plain_text: `${otp}` }),
-//     ttl: 60 * 2
-//   })
+  await this._redisservice.setvalue({
+    key: this._redisservice.otp_key({ email, subject }),
+    value: hash({ plain_text: `${otp}` }),
+    ttl: 60 * 2
+  })
 
-//   await this._redisservice.setvalue({
-//     key: this._redisservice.max_otp_key(email),
-//     value: "1",
-//     ttl: 60 * 30
-//   })
-// }
+  await this._redisservice.setvalue({
+    key: this._redisservice.max_otp_key(email),
+    value: "1",
+    ttl: 60 * 30
+  })
+}
 
 updatepassword = async (req: Request, res: Response, next: NextFunction) => {
 
@@ -295,23 +296,22 @@ if (!user) {
 await redisService.deleletekey(redisService.otp_key({ email, subject: EventEnum.forgetpassword }))
 successresponse({ res, message: "password reset successfuly" })
   }
-  const sendemailotp = async ({ email, subject } = {email:string, subject: string}) => {
-    const isblocked = await redisService.ttl(redisService.block_otp_key( email)) as number
-    if ( isblocked > 0) {
-      throw new Error(`you already blocked  please try again  after ${isblocked} seconds`)
+  
+   sendemailotp = async ({ email, subject }: { email: string, subject: EventEnum }) => {
+    const isblocked = await redisService.ttl(redisService.block_otp_key(email)) as number
+    if (isblocked > 0) {
+      throw new AppError(`you already blocked  please try again  after ${isblocked} seconds`)
     }
-    const ttlotp = await redisService.ttl(redisService.otp_key({ email, subject }))
-
-
+    const ttlotp = await redisService.ttl(redisService.otp_key({ email, subject })) as number
 
     if (ttlotp > 0) {
-
-      throw new Error(`you already have otp not expired yet please try again after ${ttlotp} seconds`)
+      throw new AppError(`you already have otp not expired yet please try again after ${ttlotp} seconds`)
     }
 
-    if (await redisService.get(redisService.max_otp_key(email))) >= 3) {
-      await redisService.setvalue({ key: redisService.block_otp_key({ email, subject }), value: 1, ttl: 15 * 60 })
-      throw new Error(`you exceed the maximmu number of trials`)
+    const maxTries = await redisService.get(redisService.max_otp_key(email))
+    if (Number(maxTries) >= 3) { // FIX: fixed broken parenthesis `>= 3)` — was syntax error
+      await redisService.setvalue({ key: redisService.block_otp_key(email), value: "1", ttl: 15 * 60 }) // FIX: value must be string; block_otp_key takes email string
+      throw new AppError(`you exceed the maximmu number of trials`)
     }
     const otp = await generateotp()
     eventemitter.emit(EventEnum.confirmemail, async () => {
@@ -320,14 +320,14 @@ successresponse({ res, message: "password reset successfuly" })
         subject: "hello to social  app",
         html: emailtemplete(otp)
       })
-      await  redisService.setvalue({ key: redisService.otp_key({ email, subject }), value: Hash({ plain_text: `${otp}` }), ttl: 60 * 2 })
-      await redisService.incr(redisService.max_otp_key( email ))
+      await redisService.setvalue({ key: redisService.otp_key({ email, subject }), value: hash({ plain_text: `${otp}` }), ttl: 60 * 2 }) // FIX: was `Hash` (uppercase, wrong import) — fixed to `hash`
+      await redisService.incr(redisService.max_otp_key(email))
     })
-
   }
-  export const resendotp = async (req: Request, res: Response, next: NextFunction) => {
+
+    resendotp = async (req: Request, res: Response, next: NextFunction) => {
     const { email } : IresendotpType = req.body
-    const user = await this._usermodel.findone({
+      const user = await this._usermodel.findOne({
       filter: { email, confirm: { $exists: false }, provider: providerenum.system },
     })
     if (!user) {
@@ -376,6 +376,7 @@ successresponse({ res, message: "password reset successfuly" })
     try {
 
       const { idtoken } = req.body
+      const client_id = process.env.GOOGLE_CLIENT_ID
 
       const client = new OAuth2Client(client_id)
 
@@ -430,7 +431,7 @@ successresponse({ res, message: "password reset successfuly" })
   }
   uploadimage=async(req:Request,res:Response,next:NextFunction)=>{
     const urls=await  this._s3service.uploadfiles({
-      files=req.files as Express.Multer.File[],
+      files: req.files as Express.Multer.File[],
       path:"users/many",
       islarge:true
     
@@ -440,30 +441,34 @@ successresponse({ res, message: "password reset successfuly" })
 
   }
   upload = async (req: Request, res: Response, next: NextFunction) => {
-    const{Filename,ContentType}=req.body
-    const {url,key}}=await this._s3service.CreatePresignedUrl({
-      Filename,
-      ContentType,
-      path:"users/${req.user._id}",
-
-
-    })
-   await this._usermodel.findoneAndUpdate({
-    filter:{_id:req?.user?._id},
-    update:{profilepic:Key}
-   })
-    successresponse({ res, data: {Key,url }})
-
+    try {
+      const { Filename, ContentType } = req.body
+      const { url, key } = await this._s3service.CreatePresignedUrl({ // FIX: was `{url,key}}` (extra brace)
+        Filename,
+        ContentType,
+        path: `users/${req.user._id}`, // FIX: was a template literal string "users/${req.user._id}" (not evaluated)
+      })
+      await this._usermodel.findoneAndUpdate({
+        filter: { _id: req?.user?._id },
+        update: { profilepic: key } 
+      })
+      successresponse({ res, data: { key, url } })
+    } catch (error) { next(error) }
   }
-upload files= async (req: Request, res: Response, next: NextFunction) => {
-const urls=await this._s3service.uploadfiles({
-  files:req.files as Express.Multer.File[],
-  path:`users/${req?.user?._id}`,
-  islarge:true
-})
-successresponse({ res, data:  urls  })
 
+  uploadfiles = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const urls = await this._s3service.uploadfiles({
+        files: req.files as Express.Multer.File[],
+        path: `users/${req?.user?._id}`,
+        islarge: true
+      })
+      successresponse({ res, data: urls })
+    } catch (error) { next(error) }
   }
+
+}
+
 
 export default new userservice()
 // انا مش محتاجه ابعت parameter فبعت instance لكن لو عايزه ابعت parameter هبعت class نفسه

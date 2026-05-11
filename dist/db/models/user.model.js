@@ -21,6 +21,7 @@ const userschema = new mongoose_1.default.Schema({
         maxLength: 7,
         trim: true
     },
+    profilepic: String,
     email: {
         type: String,
         required: true,
@@ -29,17 +30,26 @@ const userschema = new mongoose_1.default.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function () {
+            return this.provider == userenum_1.providerenum.system ? true : false;
+        },
         trim: true,
         minLength: 6
     },
+    provider: {
+        type: String,
+        enum: userenum_1.providerenum,
+        default: userenum_1.providerenum.system
+    },
     age: {
         type: Number,
-        required: true
+        required: function () {
+            return this.provider == userenum_1.providerenum.system ? true : false;
+        },
     },
     gender: {
         type: String,
-        enumm: userenum_1.GenderEnum,
+        enum: userenum_1.GenderEnum,
         default: userenum_1.GenderEnum.male
     },
     role: {
@@ -63,5 +73,42 @@ userschema.virtual("username").get(function () {
 }).set(function (val) {
     this.set({ fname: val.split(" ")[0], lname: val.split(" ")[1] });
 });
+// userschema.pre("findone",function(){
+//     console.log("=====prehook====");
+//     console.log(this.getquery());
+//     const{paranoid,....rest}=this.getquery()
+//     console.log({rest});
+//     if (paranoid==false){
+//         this.setquery({..rest});
+//     }this.setquery({..rest,deletedAT:{$exists:false}})
+// })
+// userschema.pre("save", function () {
+//     console.log("pre save hook");
+//     console.log(this)
+//     console.log (this.modifiedPaths());
+//     if (this.isModified("password")) {
+//         this.password = hash({ plaintext: this.password })
+//     }
+// })
+//mongoose hooks
+// async function test(){
+//     const user =new usermodel({
+//         username:"dalia",
+//         email: `${Date.now()}@gmail.com`,
+//         password:"123",
+//         age:26,})
+//     await user.save()
+//     test()
+// }
+//mongoose hooks
+// async function test(){
+//     const user =new usermodel({
+//         username:"dalia",
+//         email: `${Date.now()}@gmail.com`,
+//         password:"123",
+//         age:26,})
+//     await user.save()
+//     test()
+// }
 const usermodel = mongoose_1.default.models.user || mongoose_1.default.model("user", userschema);
 exports.default = usermodel;
