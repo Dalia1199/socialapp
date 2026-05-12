@@ -11,6 +11,8 @@ import { store_enum } from "../../common/enum/multerenum"
 import { randomUUID } from "node:crypto"
 import { postRepository } from "../../db/repositry/post.repository"
 import { file } from "zod"
+import { avaliabilitypost } from "../../common/utilis/avaliabilityposts"
+import { populate } from "dotenv"
 
 class postservice{
      private readonly _usermodel = new userRepository()
@@ -77,22 +79,37 @@ successresponse({res})
 
         }
 getposts=async(req:Request,res:Response,next:NextFunction)=>{
+    const searchquery=req.query?.search?{content :{$regex:req.query.search,$options:"i"}}:{}
             const posts=await this._postrepo.paginate({
                 page:+req?.query?.page!,
                 limit:+req?.query?.limit!,
                 search:{
-                    ...avaliabilitypost(req),
-                    ...(req.query?.search?{
-                        $or:[
-                            {
-                                content:{$regex:req.query?.search,$options:"i"}
-                            }
-                        ]
-                    }:{})
-                }
-            })
+                    $or:[
+                        ...avaliabilitypost(req)
+                    ],
+                    ...searchquery}})
+                    const posts=await this._postrepo.find({
+                        filter:{
+                            $or:[
+                                ...avaliabilitypost(req)
+                            ]
+                        },
+                        options:{populate:
+                        [{
+                        path:"comments",
+                        match:{
+                            commentid:{$exists:false}
+                        },
+                        populate:[{
+                            path:"replies"
+                        }]
 
-
+                        
+                        }]}
+                    })
+                   
+                    
+                    successresponse({res,data:posts})
 
         }
     likepost = async (req: Request, res: Response, next: NextFunction)=>{

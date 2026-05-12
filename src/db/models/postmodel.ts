@@ -30,6 +30,11 @@ tags:[{type:Types.ObjectId,ref:"user"}],
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 })
+   postschema.virtual("comments",{
+    ref:"comment",
+    localfield:"_id",//post
+    foreignfield:"refId",
+})
 
 const postmodel = mongoose.models.post || mongoose.model<postuser>("post",postschema)
 export default postmodel

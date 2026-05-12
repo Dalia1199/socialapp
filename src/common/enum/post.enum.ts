@@ -10,3 +10,7 @@ export enum availability_enum{
     friends="friends"
 
 }
+export enum onmodel_enum{
+    post="post",
+    comment="comment"
+}
