@@ -10,3 +10,4 @@ function hash({ plain_text, saltround = Number(conflig_service_1.saltrounds), })
 function compare({ plain_text, cipher_text, }) {
     return (0, bcrypt_1.compareSync)(plain_text, cipher_text);
 }
+//# sourceMappingURL=hash.js.map

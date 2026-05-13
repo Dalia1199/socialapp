@@ -11,3 +11,4 @@ exports.multer_enum = {
     video: ["video/mp4"],
     pdf: ["application/pdf"]
 };
+//# sourceMappingURL=multerenum.js.map

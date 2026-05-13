@@ -44,7 +44,7 @@ const postschema = new mongoose_1.default.Schema({
     createdby: { type: mongoose_1.Types.ObjectId, ref: "user", required: true },
     tags: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
     likes: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
-    allowcomments: { type: String, enum: post_enum_1.allow_comment_enum, default: post_enum_1.allow_comment_enum.allow },
+    allowcomment: { type: String, enum: post_enum_1.allow_comment_enum, default: post_enum_1.allow_comment_enum.allow },
     availability: { type: String, enum: post_enum_1.availability_enum, default: post_enum_1.availability_enum.puplic },
     folderid: String
 }, {
@@ -54,5 +54,11 @@ const postschema = new mongoose_1.default.Schema({
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
+postschema.virtual("comments", {
+    ref: "comment",
+    localfield: "_id", //post
+    foreignfield: "refId",
+});
 const postmodel = mongoose_1.default.models.post || mongoose_1.default.model("post", postschema);
 exports.default = postmodel;
+//# sourceMappingURL=postmodel.js.map

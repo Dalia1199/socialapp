@@ -6,3 +6,4 @@ var EventEnum;
     EventEnum["confirmemail"] = "confirmemail";
     EventEnum["forgetpassword"] = "forgetpassword";
 })(EventEnum || (exports.EventEnum = EventEnum = {}));
+//# sourceMappingURL=event.enum.js.map

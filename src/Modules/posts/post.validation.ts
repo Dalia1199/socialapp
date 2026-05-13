@@ -8,7 +8,7 @@ export const createpostschema = {
     content:z.string().optional(),
     attachments:z.array(generalrules.file).optional(),
     tags:z.array(generalrules.id).optional(),
-      availabilit:z.enum(availability_enum).default(availability_enum.puplic),
+      availability:z.enum(availability_enum).default(availability_enum.puplic),
       allowcomment:z.enum(allow_comment_enum).default(allow_comment_enum.allow),
   }).superRefine((args,ctx)=>{
     if(!args.content&&!args.attachments?.length){
@@ -44,7 +44,7 @@ export const updatepostschema = {
         attachments: z.array(generalrules.file).optional(),
         removefiles:z.array(z.string()).optional(),
         tags: z.array(generalrules.id).optional(),
-        availabilit: z.enum(availability_enum).default(availability_enum.puplic),
+        availability: z.enum(availability_enum).default(availability_enum.puplic),
         allowcomment: z.enum(allow_comment_enum).default(allow_comment_enum.allow),
         removetags:z.array(generalrules.id).optional(),
     }).superRefine((args, ctx) => {

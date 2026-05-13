@@ -57,3 +57,4 @@ authRouter.patch("/update-password", authentication_1.authentication, user_servi
 authRouter.post("/upload", (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachment"), user_service_1.default.uploadimage);
 authRouter.post("/uplad", authentication_1.authentication, user_service_1.default.upload);
 exports.default = authRouter;
+//# sourceMappingURL=user.controller.js.map

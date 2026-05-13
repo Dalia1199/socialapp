@@ -402,3 +402,4 @@ class userservice {
 }
 exports.default = new userservice();
 // انا مش محتاجه ابعت parameter فبعت instance لكن لو عايزه ابعت parameter هبعت class نفسه
+//# sourceMappingURL=user.service.js.map

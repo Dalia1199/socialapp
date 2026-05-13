@@ -22,8 +22,9 @@ class notifictionservice {
     }
     async sendnotifications({ tokens, data }) {
         await Promise.all(tokens.map((token) => {
-            return this.sendnotifications({ tokens, data });
+            return this.sendnotification({ token, data });
         }));
     }
 }
 exports.default = new notifictionservice();
+//# sourceMappingURL=notification.service.js.map

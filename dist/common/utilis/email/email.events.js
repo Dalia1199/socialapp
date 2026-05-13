@@ -7,3 +7,4 @@ exports.eventemitter = new node_events_1.EventEmitter();
 exports.eventemitter.on(event_enum_1.EventEnum.confirmemail, async (fn) => {
     await fn();
 });
+//# sourceMappingURL=email.events.js.map

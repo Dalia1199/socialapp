@@ -79,3 +79,4 @@ exports.confirmemailschema = {
 exports.resendotpschema = { body: z.strictObject({
         email: z.email("invalid email")
     }) };
+//# sourceMappingURL=user.validation.js.map

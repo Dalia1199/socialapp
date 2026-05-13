@@ -2,7 +2,17 @@ import { NextFunction, Request, Response } from "express"
 import { randomUUID } from "node:crypto"
 import { store_enum } from "../../common/enum/multerenum"
 import { successresponse } from "../../common/utilis/response.success"
+import { s3service } from "../../common/service/s3.servics"
+import notificationService from "../../common/service/notification.service"
+import { userRepository } from "../../db/repositry/user repository "
+class postservice{
+     private readonly _usermodel = new userRepository()
+        private readonly _redisservice = redisService
+        private readonly _s3service=new s3service()
+        private readonly notificationservice= notificationService
 
+
+        constructor(){}
 createstory = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
@@ -62,4 +72,4 @@ createstory = async (req: Request, res: Response, next: NextFunction) => {
             next(error)
         }
     }
-}
+}}

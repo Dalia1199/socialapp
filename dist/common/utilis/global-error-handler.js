@@ -19,3 +19,4 @@ const globalerrorhandler = (err, req, res, next) => {
     res.status(status).json({ message: err.message, status, stack: err.stack });
 };
 exports.globalerrorhandler = globalerrorhandler;
+//# sourceMappingURL=global-error-handler.js.map

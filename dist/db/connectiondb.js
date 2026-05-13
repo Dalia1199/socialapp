@@ -16,3 +16,4 @@ const checkconnection = async () => {
     }
 };
 exports.checkconnection = checkconnection;
+//# sourceMappingURL=connectiondb.js.map

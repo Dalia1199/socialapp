@@ -65,3 +65,4 @@ const emailtemplete = (otp) => {
 </html>`;
 };
 exports.emailtemplete = emailtemplete;
+//# sourceMappingURL=emai.templete.js.map

@@ -14,3 +14,4 @@ class userRepository extends base_repository_1.BaseRepository {
     }
 }
 exports.userRepository = userRepository;
+//# sourceMappingURL=user%20repository%20.js.map

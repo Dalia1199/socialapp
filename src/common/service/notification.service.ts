@@ -22,7 +22,7 @@ class notifictionservice {
     async sendnotifications({ tokens, data }: { tokens: string[], data: { title: string, body: string } }) {
 
         await Promise.all(tokens.map((token) => {
-            return this.sendnotifications({ tokens, data })
+            return this.sendnotification({ token, data })
         }))
     }
 

@@ -112,3 +112,4 @@ userschema.virtual("username").get(function () {
 // }
 const usermodel = mongoose_1.default.models.user || mongoose_1.default.model("user", userschema);
 exports.default = usermodel;
+//# sourceMappingURL=user.model.js.map

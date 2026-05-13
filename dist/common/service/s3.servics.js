@@ -131,3 +131,4 @@ class s3service {
     }
 }
 exports.s3service = s3service;
+//# sourceMappingURL=s3.servics.js.map

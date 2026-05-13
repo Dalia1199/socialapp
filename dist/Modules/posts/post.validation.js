@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createpostschema = void 0;
+exports.updatepostschema = exports.likepostschema = exports.createpostschema = void 0;
 const z = __importStar(require("zod"));
 const post_enum_1 = require("../../common/enum/post.enum");
 const generalrules_1 = require("../../common/utilis/generalrules");
@@ -42,7 +42,7 @@ exports.createpostschema = {
         content: z.string().optional(),
         attachments: z.array(generalrules_1.generalrules.file).optional(),
         tags: z.array(generalrules_1.generalrules.id).optional(),
-        availabilit: z.enum(post_enum_1.availability_enum).default(post_enum_1.availability_enum.puplic),
+        availability: z.enum(post_enum_1.availability_enum).default(post_enum_1.availability_enum.puplic),
         allowcomment: z.enum(post_enum_1.allow_comment_enum).default(post_enum_1.allow_comment_enum.allow),
     }).superRefine((args, ctx) => {
         if (!args.content && !args.attachments?.length) {
@@ -64,3 +64,32 @@ exports.createpostschema = {
         }
     })
 };
+exports.likepostschema = {
+    params: z.strictObject({
+        postid: generalrules_1.generalrules.id
+    })
+};
+exports.updatepostschema = {
+    body: z.strictObject({
+        content: z.string().optional(),
+        attachments: z.array(generalrules_1.generalrules.file).optional(),
+        removefiles: z.array(z.string()).optional(),
+        tags: z.array(generalrules_1.generalrules.id).optional(),
+        availability: z.enum(post_enum_1.availability_enum).default(post_enum_1.availability_enum.puplic),
+        allowcomment: z.enum(post_enum_1.allow_comment_enum).default(post_enum_1.allow_comment_enum.allow),
+        removetags: z.array(generalrules_1.generalrules.id).optional(),
+    }).superRefine((args, ctx) => {
+        if (args?.tags) {
+            const uniquetags = new Set(args.tags);
+            if (args.tags.length !== uniquetags.size) {
+                ctx.addIssue({
+                    code: "custom",
+                    path: ["tags"],
+                    message: "duplicate tags"
+                });
+            }
+        }
+    }),
+    params: exports.likepostschema.params
+};
+//# sourceMappingURL=post.validation.js.map

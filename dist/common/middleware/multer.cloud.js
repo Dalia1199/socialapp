@@ -26,3 +26,4 @@ const multercloud = ({ store_type = multerenum_1.store_enum.memory, custom_types
     return upload;
 };
 exports.default = multercloud;
+//# sourceMappingURL=multer.cloud.js.map

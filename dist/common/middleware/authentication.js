@@ -58,3 +58,4 @@ const authentication = async (req, res, next) => {
     next();
 };
 exports.authentication = authentication;
+//# sourceMappingURL=authentication.js.map

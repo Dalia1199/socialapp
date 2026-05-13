@@ -10,7 +10,7 @@ export interface Iuser {
     lname: string,
     username: string,
     email: string,
-    provider?: providerenum,
+    provider: String ,
     age: number,
     phone?: string,
     adress?: string,
@@ -22,7 +22,7 @@ export interface Iuser {
     createdAt: Date,
     updatedAt: Date,
     profilepic:String
-
+    friends?: Types.ObjectId[] 
 
 }
 const userschema = new mongoose.Schema<Iuser>({

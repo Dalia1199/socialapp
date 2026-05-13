@@ -26,3 +26,4 @@ const generateotp = async () => {
     return Math.floor(Math.random() * 90000 * 10000);
 };
 exports.generateotp = generateotp;
+//# sourceMappingURL=send%20email.js.map

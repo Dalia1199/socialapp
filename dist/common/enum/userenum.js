@@ -16,3 +16,4 @@ exports.providerenum = {
     system: "system",
     google: "google"
 };
+//# sourceMappingURL=userenum.js.map

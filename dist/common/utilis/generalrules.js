@@ -52,3 +52,4 @@ exports.generalrules = {
         size: z.number()
     })
 };
+//# sourceMappingURL=generalrules.js.map

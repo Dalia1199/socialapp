@@ -14,3 +14,4 @@ class postRepository extends base_repository_1.BaseRepository {
     }
 }
 exports.postRepository = postRepository;
+//# sourceMappingURL=post.repository.js.map

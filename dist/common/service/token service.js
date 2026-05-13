@@ -14,3 +14,4 @@ class TokenService {
     };
 }
 exports.default = new TokenService();
+//# sourceMappingURL=token%20service.js.map

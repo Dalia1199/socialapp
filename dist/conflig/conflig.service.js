@@ -23,3 +23,4 @@ exports.AWS_BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 exports.AWS_ACCESS_KEY = process.env.AWS_ACCESS_KEY;
 exports.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 exports.AWS_REGION = process.env.AWS_REGION;
+//# sourceMappingURL=conflig.service.js.map

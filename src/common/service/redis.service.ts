@@ -3,14 +3,12 @@ import { createClient } from "redis"
 import { redisurl } from "../../conflig/conflig.service"
 import { Types } from "mongoose";
 import { EventEnum } from "../enum/event.enum";
-import { fchmod } from "fs";
 
 export class redisService {
     private readonly client: RedisClientType
     constructor() {
         this.client= createClient({
-            url: redisurl!
-        });
+            url: redisurl! })as RedisClientType;
         this.handleevent()
     }
     handleevent() {
@@ -140,10 +138,10 @@ export class redisService {
      async removefcm({ userid, fcmtoken }: { userid: Types.ObjectId, fcmtoken: string }) {
         return await this.client.sRem(this.key(userid), fcmtoken);
     }
-    async getfcms(userid: Types.ObjectId) {
+    async getfcms(userid: Types.ObjectId ) {
         return await this.client.sMembers(this.key(userid));
     }
-     async hasfcms(userid: Types.ObjectId) {
+    async hasfcms(userid: Types.ObjectId) {
         return await this.client.sCard(this.key(userid));
     }
  async removefcmuser(userid:Types.ObjectId){

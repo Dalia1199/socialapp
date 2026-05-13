@@ -41,6 +41,14 @@ const authentication_1 = require("../../common/middleware/authentication");
 const post_service_1 = __importDefault(require("./post.service"));
 const validation_1 = require("../../common/middleware/validation");
 const postvalidation = __importStar(require("./post.validation"));
+const multer_cloud_1 = __importDefault(require("../../common/middleware/multer.cloud"));
+const multerenum_1 = require("../../common/enum/multerenum");
+const commentscontroller_1 = __importDefault(require("../comments/commentscontroller"));
 const postrouter = (0, express_1.Router)();
-postrouter.post("/", authentication_1.authentication, (0, validation_1.validation)(postvalidation.createpostschema), post_service_1.default.createpost);
+postrouter.use("/:postid/comments{/:commentid/replies}", commentscontroller_1.default);
+postrouter.post("/", authentication_1.authentication, (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachments"), (0, validation_1.validation)(postvalidation.createpostschema), post_service_1.default.createpost);
+postrouter.get("/", authentication_1.authentication, post_service_1.default.getposts);
+postrouter.patch("/:postid", authentication_1.authentication, (0, validation_1.validation)(postvalidation.likepostschema), post_service_1.default.likepost);
+postrouter.put("/update/:postid", authentication_1.authentication, (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachments"), (0, validation_1.validation)(postvalidation.updatepostschema), post_service_1.default.updatepost);
 exports.default = postrouter;
+//# sourceMappingURL=post.controller.js.map
