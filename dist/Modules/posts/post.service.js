@@ -180,6 +180,99 @@ class postservice {
             next(error);
         }
     };
+    getprofileposts = async (req, res, next) => {
+        try {
+            const { userid } = req.params;
+            const result = await this._postrepo.paginate({
+                page: +req?.query?.page || 1,
+                limit: +req?.query?.limit || 10,
+                sort: { createdAt: -1 },
+                populate: [{ path: "createdby", select: "fname lname profilepic" }],
+                search: {
+                    createdby: new mongoose_1.Types.ObjectId(userid),
+                    isdeleted: { $ne: true },
+                    $or: (0, avaliabilityposts_1.avaliabilitypost)(req)
+                }
+            });
+            (0, response_success_1.successresponse)({ res, data: result });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
+    reactpost = async (req, res, next) => {
+        try {
+            const { postid } = req.params;
+            const { type } = req.body;
+            const userid = req.user._id;
+            const post = await this._postrepo.findOne({ filter: { _id: postid, isdeleted: { $ne: true }, $or: (0, avaliabilityposts_1.avaliabilitypost)(req) } });
+            if (!post)
+                throw new global_error_handler_1.AppError("post not found", 404);
+            await this._postrepo.findoneAndUpdate({
+                filter: { _id: postid },
+                update: { $pull: { reactions: { userid } } }
+            });
+            if (type && Object.values(reaction_enum).includes(type)) {
+                // Add new reaction
+                await this._postrepo.findoneAndUpdate({
+                    filter: { _id: postid },
+                    update: { $addToSet: { reactions: { userid, type } } }
+                });
+            }
+            (0, response_success_1.successresponse)({ res, message: "reaction updated" });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
+    softdeletepost = async (req, res, next) => {
+        try {
+            const { postid } = req.params;
+            const post = await this._postrepo.findoneAndUpdate({
+                filter: { _id: postid, createdby: req.user._id, isdeleted: { $ne: true } },
+                update: { isdeleted: true }
+            });
+            if (!post)
+                throw new global_error_handler_1.AppError("post not found or not authorized", 404);
+            (0, response_success_1.successresponse)({ res, message: "post deleted" });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
+    harddeletepost = async (req, res, next) => {
+        try {
+            const { postid } = req.params;
+            const post = await this._postrepo.findOne({ filter: { _id: postid, createdby: req.user._id } });
+            if (!post)
+                throw new global_error_handler_1.AppError("post not found or not authorized", 404);
+            if (post.folderid) {
+                await this._s3service.deletefolder(`users/${req.user._id}/posts/${post.folderid}`);
+            }
+            await this._postrepo.findOneAndDelete({ filter: { _id: postid } });
+            (0, response_success_1.successresponse)({ res, message: "post permanently deleted" });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
+    dashboard = async (req, res, next) => {
+        try {
+            const { page, limit, search } = req.query;
+            const searchquery = search ? { content: { $regex: search, $options: "i" } } : {};
+            const result = await this._postrepo.paginate({
+                page: +page || 1,
+                limit: +limit || 20,
+                sort: { createdAt: -1 },
+                populate: [{ path: "createdby", select: "fname lname email profilepic" }],
+                search: { ...searchquery }
+            });
+            (0, response_success_1.successresponse)({ res, data: result });
+        }
+        catch (error) {
+            next(error);
+        }
+    };
 }
 exports.default = new postservice();
 //# sourceMappingURL=post.service.js.map

@@ -34,31 +34,19 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const post_enum_1 = require("../../common/enum/post.enum");
-const postschema = new mongoose_1.default.Schema({
-    content: { type: String, min: 1, required: function () {
-            return !this.attachments?.length;
-        }
-    },
-    attachments: [String],
+const notificationschema = new mongoose_1.default.Schema({
+    title: { type: String, required: true, trim: true },
+    body: { type: String, required: true, trim: true },
     createdby: { type: mongoose_1.Types.ObjectId, ref: "user", required: true },
-    tags: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
-    likes: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
-    allowcomment: { type: String, enum: post_enum_1.allow_comment_enum, default: post_enum_1.allow_comment_enum.allow },
-    availability: { type: String, enum: post_enum_1.availability_enum, default: post_enum_1.availability_enum.puplic },
-    folderid: String
+    recipients: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
+    isread: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
+    isdeleted: { type: Boolean, default: false }
 }, {
     timestamps: true,
-    strict: true,
-    strictQuery: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
-postschema.virtual("comments", {
-    ref: "comment",
-    localField: "_id",
-    foreignField: "refId"
-});
-const postmodel = mongoose_1.default.models.post || mongoose_1.default.model("post", postschema);
-exports.default = postmodel;
-//# sourceMappingURL=postmodel.js.map
+const notificationmodel = mongoose_1.default.models.notification ||
+    mongoose_1.default.model("notification", notificationschema);
+exports.default = notificationmodel;
+//# sourceMappingURL=notificationmodel.js.map

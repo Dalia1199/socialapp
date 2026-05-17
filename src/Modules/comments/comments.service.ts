@@ -311,5 +311,126 @@ class commentservice{
             next(error)
         }
     }
+    updatecomment = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { commentid, postid } = req.params
+            const { content, tags, removetags, removefiles } = req.body
+
+            const comment = await this._commentrepo.findOne({
+                filter: { _id: commentid, createdby: req.user._id, isdeleted: { $ne: true } } as any
+            })
+            if (!comment) throw new AppError("comment not found or not authorized", 404)
+
+            if (removefiles?.length) {
+                const invalid = removefiles.filter((f: string) => !comment.attachments?.includes(f))
+                if (invalid.length) throw new AppError("some files you want to remove do not exist")
+                await this._s3service.deletefiles(removefiles)
+                comment.attachments = comment.attachments?.filter((f: string) => !removefiles.includes(f))
+            }
+
+            const updatetags = new Set(comment?.tags?.map(id => id.toString()))
+            removetags?.forEach((tag: string) => updatetags.delete(tag))
+
+            let fcmtokens: string[] = []
+            if (tags?.length) {
+                const data = await this._usermodel.find({ filter: { _id: { $in: tags } } })
+                if (data.length !== tags.length) throw new AppError("some tag id not found")
+                for (const tag of data) {
+                    if (tag._id.toString() == req.user._id.toString()) throw new AppError("you cannot mention yourself")
+                    updatetags.add(tag._id.toString())
+                    const tokens = await this._redisservice.getfcms(tag._id)
+                    fcmtokens.push(...tokens)
+                }
+            }
+
+            comment.tags = [...updatetags].map(id => new Types.ObjectId(id))
+
+            if (req?.files) {
+                const newurls = await this._s3service.uploadfiles({
+                    files: req.files as Express.Multer.File[],
+                    path: `users/${req.user._id}/posts/${postid}/comments/${comment.folderid}`,
+                    store_type: store_enum.memory
+                })
+                comment.attachments?.push(...newurls)
+            }
+
+            if (content) comment.content = content
+            await comment.save()
+
+            if (fcmtokens?.length) {
+                await this.notificationservice.sendnotifications({ tokens: fcmtokens, data: { title: "you are mentioned in a comment", body: content || "comment updated" } })
+            }
+            successresponse({ res, message: "comment updated" })
+        } catch (error) { next(error) }
+    }
+
+    softdeletecomment = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { commentid } = req.params
+            const comment = await this._commentrepo.findoneAndUpdate({
+                filter: { _id: commentid, createdby: req.user._id, isdeleted: { $ne: true } } as any,
+                update: { isdeleted: true }
+            })
+            if (!comment) throw new AppError("comment not found or not authorized", 404)
+            successresponse({ res, message: "comment deleted" })
+        } catch (error) { next(error) }
+    }
+
+    harddeletecomment = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { commentid, postid } = req.params
+            const comment = await this._commentrepo.findOne({ filter: { _id: commentid, createdby: req.user._id } as any })
+            if (!comment) throw new AppError("comment not found or not authorized", 404)
+            if (comment.folderid) {
+                await this._s3service.deletefolder(`users/${req.user._id}/posts/${postid}/comments/${comment.folderid}`)
+            }
+            await this._commentrepo.findOneAndDelete({ filter: { _id: commentid } as any })
+            successresponse({ res, message: "comment permanently deleted" })
+        } catch (error) { next(error) }
+    }
+
+    reactcomment = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { commentid } = req.params
+            const { type } = req.body
+            const userid = req.user._id
+
+            const comment = await this._commentrepo.findOne({ filter: { _id: commentid, isdeleted: { $ne: true } } as any })
+            if (!comment) throw new AppError("comment not found", 404)
+
+            await this._commentrepo.findoneAndUpdate({
+                filter: { _id: commentid } as any,
+                update: { $pull: { reactions: { userid } } }
+            })
+
+            if (type && Object.values(reaction_enum).includes(type)) {
+                await this._commentrepo.findoneAndUpdate({
+                    filter: { _id: commentid } as any,
+                    update: { $addToSet: { reactions: { userid, type } } }
+                })
+            }
+            successresponse({ res, message: "reaction updated" })
+        } catch (error) { next(error) }
+    }
+
+   // get comments for a post
+    getcomments = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { postid } = req.params
+            const result = await this._commentrepo.paginate({
+                page: +req?.query?.page! || 1,
+                limit: +req?.query?.limit! || 10,
+                sort: { createdAt: -1 },
+                populate: [
+                    { path: "createdby", select: "fname lname profilepic" },
+                    { path: "tags", select: "fname lname profilepic" },
+                    { path: "replies", match: { isdeleted: { $ne: true } }, populate: [{ path: "createdby", select: "fname lname profilepic" }] }
+                ],
+                search: { refId: new Types.ObjectId(postid), onmodel: onmodel_enum.post, isdeleted: { $ne: true } } as any
+            })
+            successresponse({ res, data: result })
+        } catch (error) { next(error) }
+    }
 }
-    export default commentservice
+
+    export default new commentservice()

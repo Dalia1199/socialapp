@@ -38,17 +38,16 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const authentication_1 = require("../../common/middleware/authentication");
-const comments_service_1 = __importDefault(require("./comments.service"));
+const authorization_1 = require("../../common/middleware/authorization");
 const validation_1 = require("../../common/middleware/validation");
-const commentvalidation = __importStar(require("./comment.validation"));
-const multer_cloud_1 = __importDefault(require("../../common/middleware/multer.cloud"));
-const multerenum_1 = require("../../common/enum/multerenum");
-const commentrouter = (0, express_1.Router)({ mergeParams: true });
-commentrouter.post("/", authentication_1.authentication, (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachments"), (0, validation_1.validation)(commentvalidation.createcommentschema), comments_service_1.default.createcomment);
-commentrouter.get("/", authentication_1.authentication, comments_service_1.default.getcomments);
-commentrouter.put("/:commentid", authentication_1.authentication, (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachments"), (0, validation_1.validation)(commentvalidation.updatecommentschema), comments_service_1.default.updatecomment);
-commentrouter.delete("/:commentid", authentication_1.authentication, (0, validation_1.validation)(commentvalidation.deletecommentschema), comments_service_1.default.softdeletecomment);
-commentrouter.delete("/:commentid/hard", authentication_1.authentication, (0, validation_1.validation)(commentvalidation.deletecommentschema), comments_service_1.default.harddeletecomment);
-commentrouter.patch("/:commentid/react", authentication_1.authentication, (0, validation_1.validation)(commentvalidation.reactcommentschema), comments_service_1.default.reactcomment);
-exports.default = commentrouter;
-//# sourceMappingURL=commentscontroller.js.map
+const notification_service_1 = __importDefault(require("./notification.service"));
+const notificationvalidation = __importStar(require("./notification.validation"));
+const notificationrouter = (0, express_1.Router)();
+notificationrouter.post("/", authentication_1.authentication, (0, authorization_1.authorization)(["admin"]), (0, validation_1.validation)(notificationvalidation.createnotificationschema), notification_service_1.default.createnotification);
+notificationrouter.get("/all", authentication_1.authentication, (0, authorization_1.authorization)(["admin"]), notification_service_1.default.getnotifications);
+notificationrouter.get("/", authentication_1.authentication, notification_service_1.default.getmynotifications);
+notificationrouter.patch("/:notificationid/read", authentication_1.authentication, (0, validation_1.validation)(notificationvalidation.notificationidschema), notification_service_1.default.markasread);
+notificationrouter.put("/:notificationid", authentication_1.authentication, (0, authorization_1.authorization)(["admin"]), (0, validation_1.validation)(notificationvalidation.updatenotificationschema), notification_service_1.default.updatenotification);
+notificationrouter.delete("/:notificationid", authentication_1.authentication, (0, authorization_1.authorization)(["admin"]), (0, validation_1.validation)(notificationvalidation.notificationidschema), notification_service_1.default.deletenotification);
+exports.default = notificationrouter;
+//# sourceMappingURL=notification.controller.js.map

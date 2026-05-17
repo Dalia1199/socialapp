@@ -13,6 +13,8 @@ import { successresponse } from "./common/utilis/response.success";
 import {pipeline } from "stream/promises";
 import path from "path";
 import postrouter from "./Modules/posts/post.controller";
+import storyrouter from "./Modules/story/story.controller";
+import notificationrouter from "./Modules/notifications/notification.controller";
 // import notificationService from "./common/service/notification.service";
  const app:express.Application =express();
  const port:number =Number(Port)
@@ -104,7 +106,8 @@ res.setHeader("Content-type",result.ContentType!)
 
      app.use("/auth", authRouter)
      app.use("/posts",postrouter)
-
+     app.use("/stories", storyrouter)          
+     app.use("/notifications", notificationrouter)
 
 
 

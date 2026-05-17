@@ -191,5 +191,88 @@ getposts=async(req:Request,res:Response,next:NextFunction)=>{
         }     catch(error) { next(error) } 
 
     }
+
+    
+
+    getprofileposts = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { userid } = req.params
+            const result = await this._postrepo.paginate({
+                page: +req?.query?.page! || 1,
+                limit: +req?.query?.limit! || 10,
+                sort: { createdAt: -1 },
+                populate: [{ path: "createdby", select: "fname lname profilepic" }],
+                search: {
+                    createdby: new Types.ObjectId(userid),
+                    isdeleted: { $ne: true },
+                    $or: avaliabilitypost(req)
+                } as any
+            })
+            successresponse({ res, data: result })
+        } catch (error) { next(error) }
+    }
+    reactpost = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { postid } = req.params
+            const { type } = req.body
+            const userid = req.user._id
+
+            const post = await this._postrepo.findOne({ filter: { _id: postid, isdeleted: { $ne: true }, $or: avaliabilitypost(req) } as any })
+            if (!post) throw new AppError("post not found", 404)
+
+            await this._postrepo.findoneAndUpdate({
+                filter: { _id: postid } as any,
+                update: { $pull: { reactions: { userid } } }
+            })
+
+            if (type && Object.values(reaction_enum).includes(type)) {
+                // Add new reaction
+                await this._postrepo.findoneAndUpdate({
+                    filter: { _id: postid } as any,
+                    update: { $addToSet: { reactions: { userid, type } } }
+                })
+            }
+            successresponse({ res, message: "reaction updated" })
+        } catch (error) { next(error) }
+    }
+    softdeletepost = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { postid } = req.params
+            const post = await this._postrepo.findoneAndUpdate({
+                filter: { _id: postid, createdby: req.user._id, isdeleted: { $ne: true } } as any,
+                update: { isdeleted: true }
+            })
+            if (!post) throw new AppError("post not found or not authorized", 404)
+            successresponse({ res, message: "post deleted" })
+        } catch (error) { next(error) }
+    }
+
+    harddeletepost = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { postid } = req.params
+            const post = await this._postrepo.findOne({ filter: { _id: postid, createdby: req.user._id } as any })
+            if (!post) throw new AppError("post not found or not authorized", 404)
+            if (post.folderid) {
+                await this._s3service.deletefolder(`users/${req.user._id}/posts/${post.folderid}`)
+            }
+            await this._postrepo.findOneAndDelete({ filter: { _id: postid } as any })
+            successresponse({ res, message: "post permanently deleted" })
+        } catch (error) { next(error) }
+    }
+
+    dashboard = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { page, limit, search } = req.query
+            const searchquery = search ? { content: { $regex: search, $options: "i" } } : {}
+            const result = await this._postrepo.paginate({
+                page: +page! || 1,
+                limit: +limit! || 20,
+                sort: { createdAt: -1 },
+                populate: [{ path: "createdby", select: "fname lname email profilepic" }],
+                search: { ...searchquery } as any
+            })
+            successresponse({ res, data: result })
+        } catch (error) { next(error) }
+    }
 }
 export default new postservice()

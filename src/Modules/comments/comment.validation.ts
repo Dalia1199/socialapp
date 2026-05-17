@@ -33,3 +33,31 @@ export const createcommentschema = {
     commentid:generalrules.id.optional()
   })
 }
+export const updatecommentschema = {   
+  body: z.object({
+    content: z.string().optional(),
+    tags: z.array(generalrules.id).optional(),
+    removetags: z.array(generalrules.id).optional(),
+    removefiles: z.array(z.string()).optional(),
+    attachments: z.array(generalrules.file).optional(),
+  }),
+  params: z.object({
+    postid: generalrules.id,
+    commentid: generalrules.id
+  })
+}
+
+export const deletecommentschema = {   
+  params: z.object({
+    postid: generalrules.id,
+    commentid: generalrules.id
+  })
+}
+
+export const reactcommentschema = {   
+  params: z.object({
+    postid: generalrules.id,
+    commentid: generalrules.id
+  }),
+  body: z.object({ type: z.string().optional() })
+}

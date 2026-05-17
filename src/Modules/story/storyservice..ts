@@ -5,7 +5,7 @@ import { successresponse } from "../../common/utilis/response.success"
 import { s3service } from "../../common/service/s3.servics"
 import notificationService from "../../common/service/notification.service"
 import { userRepository } from "../../db/repositry/user repository "
-class postservice{
+class storyservice{
      private readonly _usermodel = new userRepository()
         private readonly _redisservice = redisService
         private readonly _s3service=new s3service()
@@ -73,3 +73,4 @@ createstory = async (req: Request, res: Response, next: NextFunction) => {
         }
     }
 }}
+export default storyservice()

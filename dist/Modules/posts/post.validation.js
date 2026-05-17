@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updatepostschema = exports.likepostschema = exports.createpostschema = void 0;
+exports.deletepostschema = exports.reactpostschema = exports.updatepostschema = exports.likepostschema = exports.createpostschema = void 0;
 const z = __importStar(require("zod"));
 const post_enum_1 = require("../../common/enum/post.enum");
 const generalrules_1 = require("../../common/utilis/generalrules");
@@ -91,5 +91,12 @@ exports.updatepostschema = {
         }
     }),
     params: exports.likepostschema.params
+};
+exports.reactpostschema = {
+    params: z.object({ postid: generalrules_1.generalrules.id }),
+    body: z.object({ type: z.string().optional() })
+};
+exports.deletepostschema = {
+    params: z.object({ postid: generalrules_1.generalrules.id })
 };
 //# sourceMappingURL=post.validation.js.map

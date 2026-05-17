@@ -44,11 +44,18 @@ const postvalidation = __importStar(require("./post.validation"));
 const multer_cloud_1 = __importDefault(require("../../common/middleware/multer.cloud"));
 const multerenum_1 = require("../../common/enum/multerenum");
 const commentscontroller_1 = __importDefault(require("../comments/commentscontroller"));
+const authorization_1 = require("../../common/middleware/authorization");
 const postrouter = (0, express_1.Router)();
 postrouter.use("/:postid/comments{/:commentid/replies}", commentscontroller_1.default);
 postrouter.post("/", authentication_1.authentication, (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachments"), (0, validation_1.validation)(postvalidation.createpostschema), post_service_1.default.createpost);
 postrouter.get("/", authentication_1.authentication, post_service_1.default.getposts);
 postrouter.patch("/:postid", authentication_1.authentication, (0, validation_1.validation)(postvalidation.likepostschema), post_service_1.default.likepost);
 postrouter.put("/update/:postid", authentication_1.authentication, (0, multer_cloud_1.default)({ store_type: multerenum_1.store_enum.memory }).array("attachments"), (0, validation_1.validation)(postvalidation.updatepostschema), post_service_1.default.updatepost);
+postrouter.delete("/:postid", authentication_1.authentication, (0, validation_1.validation)(postvalidation.deletepostschema), post_service_1.default.softdeletepost);
+postrouter.delete("/:postid/hard", authentication_1.authentication, (0, validation_1.validation)(postvalidation.deletepostschema), post_service_1.default.harddeletepost);
+postrouter.patch("/:postid/react", authentication_1.authentication, (0, validation_1.validation)(postvalidation.reactpostschema), post_service_1.default.reactpost);
+postrouter.patch("/:postid/like", authentication_1.authentication, (0, validation_1.validation)(postvalidation.likepostschema), post_service_1.default.likepost);
+postrouter.get("/dashboard", authentication_1.authentication, (0, authorization_1.authorization)(["admin"]), post_service_1.default.dashboard);
+postrouter.get("/", authentication_1.authentication, post_service_1.default.getposts);
 exports.default = postrouter;
 //# sourceMappingURL=post.controller.js.map

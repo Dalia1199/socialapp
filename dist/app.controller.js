@@ -15,6 +15,8 @@ const s3_servics_1 = require("./common/service/s3.servics");
 const response_success_1 = require("./common/utilis/response.success");
 const promises_1 = require("stream/promises");
 const post_controller_1 = __importDefault(require("./Modules/posts/post.controller"));
+const story_controller_1 = __importDefault(require("./Modules/story/story.controller"));
+const notification_controller_1 = __importDefault(require("./Modules/notifications/notification.controller"));
 // import notificationService from "./common/service/notification.service";
 const app = (0, express_1.default)();
 const port = Number(conflig_service_1.Port);
@@ -89,6 +91,8 @@ const bootstrap = async () => {
     //  await redisService.connect()
     app.use("/auth", user_controller_1.default);
     app.use("/posts", post_controller_1.default);
+    app.use("/stories", story_controller_1.default);
+    app.use("/notifications", notification_controller_1.default);
     app.use("{/*demo}", (req, res, next) => {
         // throw new Error(`url ${req.originalUrl}with method ${req.method} not found`,{cause:404})
         throw new global_error_handler_1.AppError("url not found", 404);

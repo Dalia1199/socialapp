@@ -20,3 +20,4 @@ storyrouter.delete(
     authentication,
     storyService.deletestory
 )
+export default storyrouter

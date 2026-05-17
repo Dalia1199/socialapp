@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createcommentschema = void 0;
+exports.reactcommentschema = exports.deletecommentschema = exports.updatecommentschema = exports.createcommentschema = void 0;
 const z = __importStar(require("zod"));
 const generalrules_1 = require("../../common/utilis/generalrules");
 const post_enum_1 = require("../../common/enum/post.enum");
@@ -66,5 +66,31 @@ exports.createcommentschema = {
         postid: generalrules_1.generalrules.id,
         commentid: generalrules_1.generalrules.id.optional()
     })
+};
+exports.updatecommentschema = {
+    body: z.object({
+        content: z.string().optional(),
+        tags: z.array(generalrules_1.generalrules.id).optional(),
+        removetags: z.array(generalrules_1.generalrules.id).optional(),
+        removefiles: z.array(z.string()).optional(),
+        attachments: z.array(generalrules_1.generalrules.file).optional(),
+    }),
+    params: z.object({
+        postid: generalrules_1.generalrules.id,
+        commentid: generalrules_1.generalrules.id
+    })
+};
+exports.deletecommentschema = {
+    params: z.object({
+        postid: generalrules_1.generalrules.id,
+        commentid: generalrules_1.generalrules.id
+    })
+};
+exports.reactcommentschema = {
+    params: z.object({
+        postid: generalrules_1.generalrules.id,
+        commentid: generalrules_1.generalrules.id
+    }),
+    body: z.object({ type: z.string().optional() })
 };
 //# sourceMappingURL=comment.validation.js.map

@@ -33,32 +33,25 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importStar(require("mongoose"));
-const post_enum_1 = require("../../common/enum/post.enum");
-const postschema = new mongoose_1.default.Schema({
-    content: { type: String, min: 1, required: function () {
-            return !this.attachments?.length;
-        }
-    },
-    attachments: [String],
-    createdby: { type: mongoose_1.Types.ObjectId, ref: "user", required: true },
-    tags: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
-    likes: [{ type: mongoose_1.Types.ObjectId, ref: "user" }],
-    allowcomment: { type: String, enum: post_enum_1.allow_comment_enum, default: post_enum_1.allow_comment_enum.allow },
-    availability: { type: String, enum: post_enum_1.availability_enum, default: post_enum_1.availability_enum.puplic },
-    folderid: String
-}, {
-    timestamps: true,
-    strict: true,
-    strictQuery: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
-postschema.virtual("comments", {
-    ref: "comment",
-    localField: "_id",
-    foreignField: "refId"
-});
-const postmodel = mongoose_1.default.models.post || mongoose_1.default.model("post", postschema);
-exports.default = postmodel;
-//# sourceMappingURL=postmodel.js.map
+exports.notificationidschema = exports.updatenotificationschema = exports.createnotificationschema = void 0;
+const z = __importStar(require("zod"));
+const generalrules_1 = require("../../common/utilis/generalrules");
+exports.createnotificationschema = {
+    body: z.object({
+        title: z.string().min(1, "title is required"),
+        body: z.string().min(1, "body is required"),
+        recipients: z.array(generalrules_1.generalrules.id).optional() // empty = broadcast to all
+    })
+};
+exports.updatenotificationschema = {
+    body: z.object({
+        title: z.string().optional(),
+        body: z.string().optional(),
+        recipients: z.array(generalrules_1.generalrules.id).optional()
+    }),
+    params: z.object({ notificationid: generalrules_1.generalrules.id })
+};
+exports.notificationidschema = {
+    params: z.object({ notificationid: generalrules_1.generalrules.id })
+};
+//# sourceMappingURL=notification.validation.js.map

@@ -9,7 +9,7 @@ const response_success_1 = require("../../common/utilis/response.success");
 const s3_servics_1 = require("../../common/service/s3.servics");
 const notification_service_1 = __importDefault(require("../../common/service/notification.service"));
 const user_repository_1 = require("../../db/repositry/user repository ");
-class postservice {
+class storyservice {
     _usermodel = new user_repository_1.userRepository();
     _redisservice = redisService;
     _s3service = new s3_servics_1.s3service();
@@ -67,4 +67,5 @@ class postservice {
         };
     };
 }
+exports.default = storyservice();
 //# sourceMappingURL=storyservice..js.map

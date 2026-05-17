@@ -63,3 +63,11 @@ export const updatepostschema = {
     }),
     params:likepostschema.params
 }
+export const reactpostschema = {  
+    params: z.object({ postid: generalrules.id }),
+    body: z.object({ type: z.string().optional() })
+}
+
+export const deletepostschema = {  
+    params: z.object({ postid: generalrules.id })
+}
