@@ -45,3 +45,6 @@ export const resendotpschema =
 { body: z.strictObject({
   email: z.email("invalid email")
 }) }
+export const getuserschema=z.strictObject({
+  token:z.string()
+})

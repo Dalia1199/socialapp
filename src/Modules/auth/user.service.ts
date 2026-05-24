@@ -19,7 +19,11 @@ import { OAuth2Client } from "google-auth-library";
 import { TokenPayload } from "google-auth-library";
 import { s3service } from "../../common/service/s3.servics";
 import notificationService from "../../common/service/notification.service";
-
+let users = [
+  { id: 1, name: "ahmed", age: 32, gender: "male" },
+  { id: 2, name: "mohamed", age: 40, gender: "female" },
+  { id: 3, name: "dalia", age: 26, gender: "female" },
+]
 class userservice {
     private readonly _usermodel = new userRepository()
     private readonly _redisservice = redisService
@@ -466,7 +470,13 @@ successresponse({ res, message: "password reset successfuly" })
       successresponse({ res, data: urls })
     } catch (error) { next(error) }
   }
-
+//graphql
+  getusersgraphql =async ()=>{
+    return  await this._usermodel.find({filter:{}})
+  }
+  getuserqraphql=async(args:any)=>{
+    return  await users.find(user=>user.id==args.id)
+  }
 }
 
 

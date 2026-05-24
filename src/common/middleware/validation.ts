@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { object, ZodType } from "zod";
 import { AppError } from "../utilis/global-error-handler";
+import { GraphQLError } from "graphql";
 
 type ReqType = keyof Request;
 type SchemaType = Partial<Record<ReqType, ZodType>>;
@@ -57,3 +58,32 @@ export const validation =(Schema:SchemaType)=>{
     }
 
 }
+export const validation_graphql = async(Schema:ZodType,data:any) => {
+        const errorvalidation = []
+     
+            const result = await Schema.safeParseAsync(data)
+            if (!result?.success) {
+                const errors = result.error.issues.map((err: any) => {
+                    return {
+                        
+                        path: err.path[0],
+                        Message: err.message
+                    }
+                })
+                errorvalidation.push(...errors)
+            }
+        
+        if (errorvalidation.length) {
+
+            throw new GraphQLError("validation error",{
+                extensions: {
+                    code: "forbidden",
+                    status: 403,
+                message:"one or more fields have  validation error"
+            }
+            }
+
+            )
+        }
+    }
+

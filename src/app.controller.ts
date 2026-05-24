@@ -15,7 +15,10 @@ import path from "path";
 import postrouter from "./Modules/posts/post.controller";
 import storyrouter from "./Modules/story/story.controller";
 import notificationrouter from "./Modules/notifications/notification.controller";
+import { qraphqlschema } from "./Modules/auth/qraphql/qraphql.schema";
 // import notificationService from "./common/service/notification.service";
+import { createHandler } from 'graphql-http/lib/use/http';
+
  const app:express.Application =express();
  const port:number =Number(Port)
 
@@ -109,7 +112,7 @@ res.setHeader("Content-type",result.ContentType!)
      app.use("/stories", storyrouter)          
      app.use("/notifications", notificationrouter)
 
-
+     app.use("/graphqql", createHandler({ schema: qraphqlschema,context:(req)=>({req})}))
 
 
     app.use("{/*demo}",(req:Request,res:Response,next:NextFunction)=>{

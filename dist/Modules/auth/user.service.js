@@ -19,6 +19,11 @@ const conflig_service_1 = require("../../conflig/conflig.service");
 const google_auth_library_1 = require("google-auth-library");
 const s3_servics_1 = require("../../common/service/s3.servics");
 const notification_service_1 = __importDefault(require("../../common/service/notification.service"));
+let users = [
+    { id: 1, name: "ahmed", age: 32, gender: "male" },
+    { id: 2, name: "mohamed", age: 40, gender: "female" },
+    { id: 3, name: "dalia", age: 26, gender: "female" },
+];
 class userservice {
     _usermodel = new user_repository_1.userRepository();
     _redisservice = redis_service_1.default;
@@ -398,6 +403,13 @@ class userservice {
         catch (error) {
             next(error);
         }
+    };
+    //graphql
+    getusersgraphql = async () => {
+        return await this._usermodel.find({ filter: {} });
+    };
+    getuserqraphql = async (args) => {
+        return await users.find(user => user.id == args.id);
     };
 }
 exports.default = new userservice();

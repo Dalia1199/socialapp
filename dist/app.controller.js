@@ -17,6 +17,7 @@ const promises_1 = require("stream/promises");
 const post_controller_1 = __importDefault(require("./Modules/posts/post.controller"));
 const story_controller_1 = __importDefault(require("./Modules/story/story.controller"));
 const notification_controller_1 = __importDefault(require("./Modules/notifications/notification.controller"));
+const qraphql_schema_1 = require("./Modules/graphql/qraphql.schema");
 // import notificationService from "./common/service/notification.service";
 const app = (0, express_1.default)();
 const port = Number(conflig_service_1.Port);
@@ -93,6 +94,7 @@ const bootstrap = async () => {
     app.use("/posts", post_controller_1.default);
     app.use("/stories", story_controller_1.default);
     app.use("/notifications", notification_controller_1.default);
+    app.use("/graphqql", createHandler({ schema: qraphql_schema_1.qraphqlschema }));
     app.use("{/*demo}", (req, res, next) => {
         // throw new Error(`url ${req.originalUrl}with method ${req.method} not found`,{cause:404})
         throw new global_error_handler_1.AppError("url not found", 404);
