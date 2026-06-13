@@ -6,7 +6,9 @@ import * as uservalidation  from "./user.validation";
 import { authentication } from "../../common/middleware/authentication";
 import multercloud from "../../common/middleware/multer.cloud";
 import { store_enum } from "../../common/enum/multerenum";
+import chatRouter from "../chat/chat.controller";
 const authRouter = Router();
+authRouter.use("/:userid/chat",chatRouter)
 authRouter.post("/signup",validation(uservalidation.signupschema),userservice.signup)
 authRouter.post("/signin", validation(uservalidation.signinschema), userservice.signin)
 authRouter.patch("/confirm-email", validation(uservalidation.confirmemailschema), userservice.confirmemail)

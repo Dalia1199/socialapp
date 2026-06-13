@@ -119,8 +119,18 @@ successresponse({ res, message: "user signed in successfuly", data: { access_tok
 
     }
      getprofile = async (req: Request, res: Response, next: NextFunction) => {
+      const user=await this._usermodel.find({
+        filter:{
+          _id:req.user?._id as Types.ObjectId
+        },
+        options:{
+          populate:[
+            {path:"friends"}
+          ]
+        }
+      })
     
-        successresponse({ res, message: "user signed in successfuly", data: {user: req.user } })
+        successresponse({ res, message: "user signed in successfuly", data: {user} })
 
     }
   signupwithgmail = async (req: Request, res: Response, next: NextFunction) => {

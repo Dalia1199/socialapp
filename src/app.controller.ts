@@ -18,8 +18,11 @@ import notificationrouter from "./Modules/notifications/notification.controller"
 import { qraphqlschema } from "./Modules/auth/qraphql/qraphql.schema";
 // import notificationService from "./common/service/notification.service";
 import { createHandler } from 'graphql-http/lib/use/http';
+import socketGetway from "./Modules/realtime/socket.getway";
+import { decoded_and_fetchuser } from "./common/middleware/authentication";
 
  const app:express.Application =express();
+ //application:type of express
  const port:number =Number(Port)
 
  const bootstrap= async()=>{
@@ -120,10 +123,23 @@ res.setHeader("Content-type",result.ContentType!)
         throw new AppError( "url not found", 404 )
     })
      app.use(globalerrorhandler)
+     io.use(async(socket,next)=>{
+        console.log("socket");
+        const{user}=await decoded_and_fetchuser(socket.handshake.auth.authorization)
+     })
+  io.on("connection",(socket)=>{
+    console.log(socket.id);
 
+  })
 app.listen(port,()=>{
     console.log(`server is running on port${port}`)
 })
+     const httpserver = app.listen(port, () => {
+         console.log(`server is running on port${port}`)
+     });
+     await socketGetway.initio(httpserver)
+
+
 }
 export default bootstrap
 
